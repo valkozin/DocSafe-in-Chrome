@@ -12,7 +12,7 @@
     "lint:fix": "eslint src/ tests/ --fix",
     "build": "echo 'Extension ready for loading in Chrome'",
     "dev": "echo 'Load extension from current directory in Chrome Developer Mode'",
-    "package": "zip -r docsafe-extension.zip . -x '*.git*' 'node_modules/*' 'tests/*' 'package*.json' '*.md'"
+    "package": "zip -r local-file-vault.zip . -x '*.git*' 'node_modules/*' 'tests/*' 'package*.json' '*.md'"
   },
   "keywords": [
     "chrome-extension",
