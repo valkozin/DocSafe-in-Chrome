@@ -17,6 +17,7 @@ class PopupUI {
       this.setupEventListeners();
       await this.loadFolders();
       await this.selectDefaultFolder();
+      await this.updateStorageIndicator();
     } catch (error) {
       this.showToast('Failed to initialize app: ' + error.message, 'error');
     }
@@ -97,6 +98,11 @@ class PopupUI {
       if (e.key === 'Enter') this.handleRename();
     });
 
+    // Storage indicator click
+    document.getElementById('storageIndicator').addEventListener('click', () => {
+      this.showStorageDetails();
+    });
+
     // Close modals on backdrop click
     document.querySelectorAll('.modal').forEach(modal => {
       modal.addEventListener('click', (e) => {
@@ -128,13 +134,13 @@ class PopupUI {
     div.dataset.folderId = folder.id;
 
     const isUnlocked = app.isFolderUnlocked(folder.id);
-    const lockIcon = folder.isProtected ? (isUnlocked ? 'lock_open' : 'lock') : '';
+    const lockIconClass = folder.isProtected ? (isUnlocked ? 'icon-lock-open' : 'icon-lock') : '';
 
     div.innerHTML = `
       <div class="folder-content">
-        <span class="material-icons folder-icon">folder</span>
+        <span class="icon icon-folder folder-icon"></span>
         <span class="folder-name">${this.escapeHtml(folder.name)}</span>
-        ${lockIcon ? `<span class="material-icons lock-icon">${lockIcon}</span>` : ''}
+        ${lockIconClass ? `<span class="icon ${lockIconClass} lock-icon"></span>` : ''}
       </div>
     `;
 
@@ -179,7 +185,7 @@ class PopupUI {
     document.querySelectorAll('.folder-item').forEach(item => {
       item.classList.remove('active');
     });
-    
+
     const selectedItem = document.querySelector(`[data-folder-id="${folderId}"]`);
     if (selectedItem) {
       selectedItem.classList.add('active');
@@ -222,22 +228,22 @@ class PopupUI {
 
     div.innerHTML = `
       <div class="file-info">
-        <span class="material-icons file-icon">${fileIcon}</span>
+        <span class="icon ${fileIcon} file-icon"></span>
         <div class="file-details">
           <div class="file-name">${this.escapeHtml(file.filename)}</div>
           <div class="file-meta">${fileSize} • ${uploadDate}</div>
         </div>
-        ${file.isEncrypted ? '<span class="material-icons encrypted-icon" title="Encrypted">lock</span>' : ''}
+        ${file.isEncrypted ? '<span class="icon icon-lock encrypted-icon" title="Encrypted"></span>' : ''}
       </div>
       <div class="file-actions">
         <button class="icon-btn download-btn" title="Download">
-          <span class="material-icons">download</span>
+          <span class="icon icon-download"></span>
         </button>
         <button class="icon-btn rename-btn" title="Rename">
-          <span class="material-icons">edit</span>
+          <span class="icon icon-edit"></span>
         </button>
         <button class="icon-btn delete-btn" title="Delete">
-          <span class="material-icons">delete</span>
+          <span class="icon icon-delete"></span>
         </button>
       </div>
     `;
@@ -262,15 +268,16 @@ class PopupUI {
   }
 
   getFileIcon(mimeType) {
-    if (mimeType.startsWith('image/')) return 'image';
-    if (mimeType.startsWith('video/')) return 'movie';
-    if (mimeType.startsWith('audio/')) return 'music_note';
-    if (mimeType.includes('pdf')) return 'picture_as_pdf';
-    if (mimeType.includes('word')) return 'description';
-    if (mimeType.includes('excel') || mimeType.includes('spreadsheet')) return 'table_chart';
-    if (mimeType.includes('powerpoint') || mimeType.includes('presentation')) return 'slideshow';
-    if (mimeType.includes('zip') || mimeType.includes('rar')) return 'archive';
-    return 'insert_drive_file';
+    // Return icon class names instead of Material Icons names
+    if (mimeType.startsWith('image/')) return 'icon-file';
+    if (mimeType.startsWith('video/')) return 'icon-file';
+    if (mimeType.startsWith('audio/')) return 'icon-file';
+    if (mimeType.includes('pdf')) return 'icon-file';
+    if (mimeType.includes('word')) return 'icon-file';
+    if (mimeType.includes('excel') || mimeType.includes('spreadsheet')) return 'icon-file';
+    if (mimeType.includes('powerpoint') || mimeType.includes('presentation')) return 'icon-file';
+    if (mimeType.includes('zip') || mimeType.includes('rar')) return 'icon-file';
+    return 'icon-file';
   }
 
   formatFileSize(bytes) {
@@ -291,17 +298,28 @@ class PopupUI {
   }
 
   async uploadFiles(files) {
-    this.showProgress('Uploading files...');
-    
+    this.showProgress('Uploading files... (Large files may take a moment)');
+
     try {
+      const total = files.length;
+      let count = 0;
+
       for (const file of files) {
+        count++;
+        this.showProgress(`Uploading file ${count} of ${total}: ${file.name}`);
         await app.uploadFile(file);
       }
-      
+
       await this.loadFiles();
+      await this.updateStorageIndicator();
       this.showToast(`Successfully uploaded ${files.length} file(s)`, 'success');
     } catch (error) {
-      this.showToast('Upload failed: ' + error.message, 'error');
+      this.hideProgress();
+      if (error.message && error.message.includes('LIMIT_REACHED_STORAGE')) {
+        this.showToast('Storage limit reached (Paid Plan - To be added soon)', 'warning');
+      } else {
+        this.showToast('Upload failed: ' + error.message, 'error');
+      }
     } finally {
       this.hideProgress();
     }
@@ -309,10 +327,10 @@ class PopupUI {
 
   async downloadFile(fileId) {
     this.showProgress('Downloading file...');
-    
+
     try {
       const { blob, filename } = await app.downloadFile(fileId);
-      
+
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
@@ -321,7 +339,7 @@ class PopupUI {
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
-      
+
       this.showToast('File downloaded successfully', 'success');
     } catch (error) {
       this.showToast('Download failed: ' + error.message, 'error');
@@ -338,6 +356,7 @@ class PopupUI {
     try {
       await app.deleteFile(fileId);
       await this.loadFiles();
+      await this.updateStorageIndicator();
       this.showToast('File deleted successfully', 'success');
     } catch (error) {
       this.showToast('Delete failed: ' + error.message, 'error');
@@ -365,7 +384,7 @@ class PopupUI {
   async handleDrop(e) {
     e.preventDefault();
     document.getElementById('dropArea').classList.remove('drag-over');
-    
+
     const files = Array.from(e.dataTransfer.files);
     if (files.length > 0) {
       await this.uploadFiles(files);
@@ -450,6 +469,10 @@ class PopupUI {
         errorDiv.textContent = 'Please enter a password';
         return;
       }
+      if (password.length < 8) {
+        errorDiv.textContent = 'Password must be at least 8 characters';
+        return;
+      }
       if (password !== confirmPassword) {
         errorDiv.textContent = 'Passwords do not match';
         return;
@@ -462,7 +485,12 @@ class PopupUI {
       await this.loadFolders();
       this.showToast('Folder created successfully', 'success');
     } catch (error) {
-      errorDiv.textContent = error.message;
+      if (error.message && error.message.includes('LIMIT_REACHED_PROTECTED_FOLDERS')) {
+        this.showToast('Protected folder limit reached (Paid Plan - To be added soon)', 'warning');
+        this.hideNewFolderModal();
+      } else {
+        this.showToast(error.message, 'error');
+      }
     }
   }
 
@@ -513,6 +541,7 @@ class PopupUI {
       await app.deleteFolder(app.currentFolder.id);
       await this.loadFolders();
       await this.selectDefaultFolder();
+      await this.updateStorageIndicator();
       this.showToast('Folder deleted successfully', 'success');
     } catch (error) {
       this.showToast('Delete failed: ' + error.message, 'error');
@@ -540,13 +569,13 @@ class PopupUI {
     const toast = document.createElement('div');
     toast.className = `toast toast-${type}`;
     toast.textContent = message;
-    
+
     const container = document.getElementById('toastContainer');
     container.appendChild(toast);
-    
+
     // Trigger animation
     setTimeout(() => toast.classList.add('show'), 10);
-    
+
     // Auto remove
     setTimeout(() => {
       toast.classList.remove('show');
@@ -558,6 +587,79 @@ class PopupUI {
     const div = document.createElement('div');
     div.textContent = text;
     return div.innerHTML;
+  }
+
+  // Storage indicator methods
+  async updateStorageIndicator() {
+    try {
+      const storageUsage = await app.getStorageUsage();
+      const storageText = document.getElementById('storageText');
+      const storageBar = document.getElementById('storageBar');
+
+      if (storageUsage.error) {
+        storageText.textContent = 'Storage info unavailable';
+        storageBar.style.width = '0%';
+        return;
+      }
+
+      const percentage = Math.min(storageUsage.usagePercentage, 100);
+      const statusText = storageUsage.fallback
+        ? `${storageUsage.usageFormatted} stored (estimated)`
+        : `${percentage.toFixed(1)}% used (${storageUsage.usageFormatted} of ${storageUsage.quotaFormatted})`;
+
+      storageText.textContent = statusText;
+      storageBar.style.width = percentage + '%';
+
+      // Update bar color based on usage
+      storageBar.classList.remove('low', 'medium', 'high', 'critical');
+      if (percentage < 50) {
+        storageBar.classList.add('low');
+      } else if (percentage < 75) {
+        storageBar.classList.add('medium');
+      } else if (percentage < 90) {
+        storageBar.classList.add('high');
+      } else {
+        storageBar.classList.add('critical');
+      }
+
+    } catch (error) {
+      // console.error('Error updating storage indicator:', error); // Removed console.error
+      document.getElementById('storageText').textContent = 'Storage calculation failed';
+    }
+  }
+
+  async showStorageDetails() {
+    try {
+      const [storageUsage, stats] = await Promise.all([
+        app.getStorageUsage(),
+        app.getStorageStats()
+      ]);
+
+      const details = storageUsage.fallback || storageUsage.error
+        ? `Storage Details:
+
+📁 Total Files: ${stats.totalFiles}
+📂 Total Folders: ${stats.folderCount}
+🔒 Protected Folders: ${stats.protectedFolders}
+💾 Total Size: ${app.formatBytes(stats.totalSize)}
+
+Note: Browser storage quota information is not available. The indicator shows your stored data only.`
+        : `Storage Details:
+
+📊 Usage: ${storageUsage.usagePercentage.toFixed(1)}% of available space
+💾 Used: ${storageUsage.usageFormatted}
+🗄️ Available: ${storageUsage.quotaFormatted}
+
+📁 Your Files: ${stats.totalFiles} files
+📂 Your Folders: ${stats.folderCount} folders
+🔒 Protected Folders: ${stats.protectedFolders}
+💾 Your Data: ${app.formatBytes(stats.totalSize)}`;
+
+      alert(details);
+    } catch (error) {
+      // console.error('Error showing storage details:', error); // Removed console.error
+      alert('Unable to load storage details at this time.');
+    }
   }
 }
 

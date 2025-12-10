@@ -6,7 +6,7 @@
 const SALT_LENGTH = 16;
 const IV_LENGTH = 12;
 const KEY_LENGTH = 256;
-const PBKDF2_ITERATIONS = 100000;
+const PBKDF2_ITERATIONS = 600_000;
 
 /**
  * Generate a random salt
@@ -28,7 +28,7 @@ export function generateIV() {
 export async function deriveKey(password, salt) {
   const encoder = new TextEncoder();
   const passwordBuffer = encoder.encode(password);
-  
+
   const importedKey = await crypto.subtle.importKey(
     'raw',
     passwordBuffer,
@@ -57,7 +57,7 @@ export async function deriveKey(password, salt) {
 export async function hashPassword(password, salt) {
   const encoder = new TextEncoder();
   const passwordBuffer = encoder.encode(password);
-  
+
   const importedKey = await crypto.subtle.importKey(
     'raw',
     passwordBuffer,
@@ -76,7 +76,7 @@ export async function hashPassword(password, salt) {
     importedKey,
     KEY_LENGTH
   );
-  
+
   return new Uint8Array(derivedBits);
 }
 
@@ -85,17 +85,17 @@ export async function hashPassword(password, salt) {
  */
 export async function verifyPassword(password, salt, storedHash) {
   const computedHash = await hashPassword(password, salt);
-  
+
   if (computedHash.length !== storedHash.length) {
     return false;
   }
-  
+
   // Constant-time comparison
   let result = 0;
   for (let i = 0; i < computedHash.length; i++) {
     result |= computedHash[i] ^ storedHash[i];
   }
-  
+
   return result === 0;
 }
 
@@ -105,7 +105,7 @@ export async function verifyPassword(password, salt, storedHash) {
 export async function encryptData(data, password, salt) {
   const key = await deriveKey(password, salt);
   const iv = generateIV();
-  
+
   let dataBuffer;
   if (data instanceof Blob) {
     dataBuffer = await data.arrayBuffer();
@@ -140,7 +140,7 @@ export async function encryptData(data, password, salt) {
  */
 export async function decryptData(encryptedData, password, salt) {
   const key = await deriveKey(password, salt);
-  
+
   // Extract IV and encrypted data
   const iv = encryptedData.slice(0, IV_LENGTH);
   const data = encryptedData.slice(IV_LENGTH);
@@ -175,7 +175,7 @@ export async function encryptFile(file, password, salt) {
 export async function decryptFile(encryptedBlob, password, salt, originalType) {
   const encryptedArrayBuffer = await encryptedBlob.arrayBuffer();
   const encryptedData = new Uint8Array(encryptedArrayBuffer);
-  
+
   const decryptedArrayBuffer = await decryptData(encryptedData, password, salt);
   return new Blob([decryptedArrayBuffer], { type: originalType });
 }

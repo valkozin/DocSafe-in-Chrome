@@ -48,12 +48,12 @@ global.indexedDB = {
 describe('DocSafe Database', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    
+
     // Setup default mocks
     mockDB.transaction.mockReturnValue(mockTransaction);
     mockTransaction.objectStore.mockReturnValue(mockStore);
     mockStore.index.mockReturnValue(mockIndex);
-    
+
     // Mock successful requests
     mockStore.add.mockReturnValue(mockRequest);
     mockStore.get.mockReturnValue(mockRequest);
@@ -76,12 +76,12 @@ describe('DocSafe Database', () => {
       global.indexedDB.open.mockReturnValue(mockOpenRequest);
 
       const initPromise = dbInstance.init();
-      
+
       // Simulate successful opening
       mockOpenRequest.onsuccess();
-      
+
       await expect(initPromise).resolves.toBe(mockDB);
-      expect(global.indexedDB.open).toHaveBeenCalledWith('DocSafeDB', 1);
+      expect(global.indexedDB.open).toHaveBeenCalledWith('DocSafeDB', 2);
     });
 
     test('should handle database upgrade', () => {
@@ -108,10 +108,10 @@ describe('DocSafe Database', () => {
       global.indexedDB.open.mockReturnValue(mockOpenRequest);
 
       dbInstance.init();
-      
+
       // Simulate upgrade needed
       mockOpenRequest.onupgradeneeded(mockEvent);
-      
+
       expect(mockEvent.target.result.createObjectStore).toHaveBeenCalledWith('files', { keyPath: 'id' });
       expect(mockEvent.target.result.createObjectStore).toHaveBeenCalledWith('folders', { keyPath: 'id' });
       expect(mockEvent.target.result.createObjectStore).toHaveBeenCalledWith('metadata', { keyPath: 'key' });
@@ -128,10 +128,10 @@ describe('DocSafe Database', () => {
       global.indexedDB.open.mockReturnValue(mockOpenRequest);
 
       const initPromise = dbInstance.init();
-      
+
       // Simulate error
       mockOpenRequest.onerror();
-      
+
       await expect(initPromise).rejects.toEqual(mockOpenRequest.error);
     });
   });
@@ -150,9 +150,9 @@ describe('DocSafe Database', () => {
       };
 
       mockStore.add.mockReturnValue(mockRequest);
-      
-      const addPromise = dbInstance.addFile(testFile);
-      
+
+      dbInstance.addFile(testFile);
+
       expect(mockDB.transaction).toHaveBeenCalledWith(['files'], 'readwrite');
       expect(mockTransaction.objectStore).toHaveBeenCalledWith('files');
       expect(mockStore.add).toHaveBeenCalledWith(testFile);
@@ -163,15 +163,15 @@ describe('DocSafe Database', () => {
       const expectedFile = { id: fileId, filename: 'test.txt' };
 
       mockRequest.result = expectedFile;
-      
+
       const getPromise = dbInstance.getFile(fileId);
-      
+
       // Simulate successful request
       setTimeout(() => mockRequest.onsuccess(), 0);
-      
+
       expect(mockDB.transaction).toHaveBeenCalledWith(['files'], 'readonly');
       expect(mockStore.get).toHaveBeenCalledWith(fileId);
-      
+
       const result = await getPromise;
       expect(result).toBe(expectedFile);
     });
@@ -184,9 +184,9 @@ describe('DocSafe Database', () => {
       };
 
       mockStore.put.mockReturnValue(mockRequest);
-      
-      const updatePromise = dbInstance.updateFile(testFile);
-      
+
+      dbInstance.updateFile(testFile);
+
       expect(mockDB.transaction).toHaveBeenCalledWith(['files'], 'readwrite');
       expect(mockStore.put).toHaveBeenCalledWith(testFile);
     });
@@ -195,9 +195,9 @@ describe('DocSafe Database', () => {
       const fileId = 'test-file-1';
 
       mockStore.delete.mockReturnValue(mockRequest);
-      
-      const deletePromise = dbInstance.deleteFile(fileId);
-      
+
+      dbInstance.deleteFile(fileId);
+
       expect(mockDB.transaction).toHaveBeenCalledWith(['files'], 'readwrite');
       expect(mockStore.delete).toHaveBeenCalledWith(fileId);
     });
@@ -210,16 +210,16 @@ describe('DocSafe Database', () => {
       ];
 
       mockRequest.result = expectedFiles;
-      
+
       const getPromise = dbInstance.getFilesByFolder(folderId);
-      
+
       // Simulate successful request
       setTimeout(() => mockRequest.onsuccess(), 0);
-      
+
       expect(mockDB.transaction).toHaveBeenCalledWith(['files'], 'readonly');
       expect(mockStore.index).toHaveBeenCalledWith('folderId');
       expect(mockIndex.getAll).toHaveBeenCalledWith(folderId);
-      
+
       const result = await getPromise;
       expect(result).toBe(expectedFiles);
     });
@@ -238,9 +238,9 @@ describe('DocSafe Database', () => {
       };
 
       mockStore.add.mockReturnValue(mockRequest);
-      
-      const addPromise = dbInstance.addFolder(testFolder);
-      
+
+      dbInstance.addFolder(testFolder);
+
       expect(mockDB.transaction).toHaveBeenCalledWith(['folders'], 'readwrite');
       expect(mockStore.add).toHaveBeenCalledWith(testFolder);
     });
@@ -250,15 +250,15 @@ describe('DocSafe Database', () => {
       const expectedFolder = { id: folderId, name: 'Test Folder' };
 
       mockRequest.result = expectedFolder;
-      
+
       const getPromise = dbInstance.getFolder(folderId);
-      
+
       // Simulate successful request
       setTimeout(() => mockRequest.onsuccess(), 0);
-      
+
       expect(mockDB.transaction).toHaveBeenCalledWith(['folders'], 'readonly');
       expect(mockStore.get).toHaveBeenCalledWith(folderId);
-      
+
       const result = await getPromise;
       expect(result).toBe(expectedFolder);
     });
@@ -270,15 +270,15 @@ describe('DocSafe Database', () => {
       ];
 
       mockRequest.result = expectedFolders;
-      
+
       const getAllPromise = dbInstance.getAllFolders();
-      
+
       // Simulate successful request
       setTimeout(() => mockRequest.onsuccess(), 0);
-      
+
       expect(mockDB.transaction).toHaveBeenCalledWith(['folders'], 'readonly');
       expect(mockStore.getAll).toHaveBeenCalled();
-      
+
       const result = await getAllPromise;
       expect(result).toBe(expectedFolders);
     });
@@ -291,9 +291,9 @@ describe('DocSafe Database', () => {
       };
 
       mockStore.put.mockReturnValue(mockRequest);
-      
-      const updatePromise = dbInstance.updateFolder(testFolder);
-      
+
+      dbInstance.updateFolder(testFolder);
+
       expect(mockDB.transaction).toHaveBeenCalledWith(['folders'], 'readwrite');
       expect(mockStore.put).toHaveBeenCalledWith(testFolder);
     });
@@ -302,9 +302,9 @@ describe('DocSafe Database', () => {
       const folderId = 'folder-1';
 
       mockStore.delete.mockReturnValue(mockRequest);
-      
-      const deletePromise = dbInstance.deleteFolder(folderId);
-      
+
+      dbInstance.deleteFolder(folderId);
+
       expect(mockDB.transaction).toHaveBeenCalledWith(['folders'], 'readwrite');
       expect(mockStore.delete).toHaveBeenCalledWith(folderId);
     });
@@ -320,9 +320,9 @@ describe('DocSafe Database', () => {
       const value = 'test-value';
 
       mockStore.put.mockReturnValue(mockRequest);
-      
-      const setPromise = dbInstance.setMetadata(key, value);
-      
+
+      dbInstance.setMetadata(key, value);
+
       expect(mockDB.transaction).toHaveBeenCalledWith(['metadata'], 'readwrite');
       expect(mockStore.put).toHaveBeenCalledWith({ key, value });
     });
@@ -332,15 +332,15 @@ describe('DocSafe Database', () => {
       const expectedValue = 'test-value';
 
       mockRequest.result = { key, value: expectedValue };
-      
+
       const getPromise = dbInstance.getMetadata(key);
-      
+
       // Simulate successful request
       setTimeout(() => mockRequest.onsuccess(), 0);
-      
+
       expect(mockDB.transaction).toHaveBeenCalledWith(['metadata'], 'readonly');
       expect(mockStore.get).toHaveBeenCalledWith(key);
-      
+
       const result = await getPromise;
       expect(result).toBe(expectedValue);
     });
@@ -349,12 +349,12 @@ describe('DocSafe Database', () => {
       const key = 'non-existent-key';
 
       mockRequest.result = undefined;
-      
+
       const getPromise = dbInstance.getMetadata(key);
-      
+
       // Simulate successful request
       setTimeout(() => mockRequest.onsuccess(), 0);
-      
+
       const result = await getPromise;
       expect(result).toBeUndefined();
     });
@@ -379,22 +379,22 @@ describe('DocSafe Database', () => {
 
       await dbInstance.clearAll();
 
-      expect(mockDB.transaction).toHaveBeenCalledWith(['files', 'folders', 'metadata'], 'readwrite');
-      expect(mockStore.clear).toHaveBeenCalledTimes(3);
+      expect(mockDB.transaction).toHaveBeenCalledWith(['files', 'folders', 'metadata', 'file_chunks'], 'readwrite');
+      expect(mockStore.clear).toHaveBeenCalledTimes(4);
     });
 
     test('close should close database connection', async () => {
       await dbInstance.close();
-      
+
       expect(mockDB.close).toHaveBeenCalled();
       expect(dbInstance.db).toBeNull();
     });
 
     test('close should handle null database', async () => {
       dbInstance.db = null;
-      
+
       await dbInstance.close();
-      
+
       expect(mockDB.close).not.toHaveBeenCalled();
     });
   });
@@ -409,10 +409,10 @@ describe('DocSafe Database', () => {
       mockRequest.error = testError;
 
       const getPromise = dbInstance.getFile('test-id');
-      
+
       // Simulate error
       setTimeout(() => mockRequest.onerror(), 0);
-      
+
       await expect(getPromise).rejects.toBe(testError);
     });
   });

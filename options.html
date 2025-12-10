@@ -1,19 +1,21 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>DocSafe - Settings</title>
+  <title>Local File Vault - Settings</title>
   <link rel="stylesheet" href="css/options.css">
-  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link rel="stylesheet" href="css/icons.css">
 </head>
+
 <body>
   <div class="options-container">
     <!-- Header -->
     <header class="header">
       <div class="header-title">
-        <span class="material-icons">security</span>
-        DocSafe Settings
+        <span class="icon icon-security"></span>
+        Local File Vault Settings
       </div>
     </header>
 
@@ -22,7 +24,7 @@
       <!-- Storage Information -->
       <section class="section">
         <h2 class="section-title">
-          <span class="material-icons">storage</span>
+          <span class="icon icon-storage"></span>
           Storage Information
         </h2>
         <div class="card">
@@ -45,145 +47,92 @@
             </div>
           </div>
           <button id="refreshStatsBtn" class="btn btn-secondary">
-            <span class="material-icons">refresh</span>
+            <span class="icon icon-refresh"></span>
             Refresh
           </button>
         </div>
       </section>
 
-      <!-- Security Settings -->
-      <section class="section">
-        <h2 class="section-title">
-          <span class="material-icons">security</span>
-          Security Settings
-        </h2>
-        <div class="card">
-          <div class="setting-item">
-            <div class="setting-info">
-              <h3>Auto-lock Folders</h3>
-              <p>Automatically lock all protected folders when the extension is closed</p>
-            </div>
-            <label class="toggle">
-              <input type="checkbox" id="autoLockToggle" checked>
-              <span class="toggle-slider"></span>
-            </label>
-          </div>
-          
-          <div class="setting-item">
-            <div class="setting-info">
-              <h3>Session Timeout</h3>
-              <p>Lock folders after a period of inactivity (in minutes)</p>
-            </div>
-            <select id="sessionTimeout" class="select">
-              <option value="0">Never</option>
-              <option value="5">5 minutes</option>
-              <option value="15" selected>15 minutes</option>
-              <option value="30">30 minutes</option>
-              <option value="60">1 hour</option>
-            </select>
-          </div>
-        </div>
-      </section>
+      </select>
+  </div>
+  </div>
+  </section>
 
-      <!-- Export/Import -->
-      <section class="section">
-        <h2 class="section-title">
-          <span class="material-icons">import_export</span>
-          Data Management
-        </h2>
-        <div class="card">
-          <div class="action-item">
-            <div class="action-info">
-              <h3>Export Vault Settings</h3>
-              <p>Export folder structure and settings (files are not included)</p>
-            </div>
-            <button id="exportBtn" class="btn btn-secondary">
-              <span class="material-icons">file_download</span>
-              Export
-            </button>
-          </div>
-          
-          <div class="action-item">
-            <div class="action-info">
-              <h3>Import Vault Settings</h3>
-              <p>Import folder structure and settings from a backup file</p>
-            </div>
-            <div class="import-actions">
-              <input type="file" id="importFile" accept=".json" hidden>
-              <button id="importBtn" class="btn btn-secondary">
-                <span class="material-icons">file_upload</span>
-                Import
-              </button>
-            </div>
-          </div>
+  <!-- Security Settings -->
+  <section class="section">
+    <h2 class="section-title">
+      <span class="icon icon-security"></span>
+      Security Settings
+    </h2>
+    <div class="card">
+      <div class="setting-item">
+        <div class="setting-info">
+          <h3>Auto-lock when extension is closed</h3>
+          <p>Automatically lock all protected folders when you close the extension popup or dashboard</p>
         </div>
-      </section>
+        <label class="toggle">
+          <input type="checkbox" id="autoLockToggle" checked>
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+    </div>
+  </section>
 
-      <!-- Danger Zone -->
-      <section class="section">
-        <h2 class="section-title danger">
-          <span class="material-icons">warning</span>
-          Danger Zone
-        </h2>
-        <div class="card danger-card">
-          <div class="action-item">
-            <div class="action-info">
-              <h3>Lock All Folders</h3>
-              <p>Immediately lock all protected folders and clear session passwords</p>
-            </div>
-            <button id="lockAllBtn" class="btn btn-warning">
-              <span class="material-icons">lock</span>
-              Lock All
-            </button>
-          </div>
-          
-          <div class="action-item">
-            <div class="action-info">
-              <h3>Reset Vault</h3>
-              <p><strong>Warning:</strong> This will permanently delete all files, folders, and settings. This action cannot be undone.</p>
-            </div>
-            <button id="resetVaultBtn" class="btn btn-danger">
-              <span class="material-icons">delete_forever</span>
-              Reset Vault
-            </button>
-          </div>
+  <!-- Danger Zone -->
+  <section class="section">
+    <h2 class="section-title danger">
+      <span class="icon icon-warning"></span>
+      Danger Zone
+    </h2>
+    <div class="card danger-card">
+      <div class="action-item">
+        <div class="action-info">
+          <h3>Reset Vault</h3>
+          <p><strong>Warning:</strong> This will permanently delete all files, folders, and settings. This action
+            cannot be undone.</p>
         </div>
-      </section>
+        <button id="resetVaultBtn" class="btn btn-danger">
+          <span class="icon icon-delete"></span>
+          Reset Vault
+        </button>
+      </div>
+    </div>
+  </section>
 
-      <!-- About -->
-      <section class="section">
-        <h2 class="section-title">
-          <span class="material-icons">info</span>
-          About
-        </h2>
-        <div class="card">
-          <div class="about-content">
-            <h3>DocSafe Document Vault</h3>
-            <p>Version 1.0.0</p>
-            <p>A secure document storage extension with encryption and password protection.</p>
-            
-            <div class="features-list">
-              <div class="feature-item">
-                <span class="material-icons">enhanced_encryption</span>
-                <span>AES-GCM encryption for protected folders</span>
-              </div>
-              <div class="feature-item">
-                <span class="material-icons">folder_special</span>
-                <span>Unlimited folder organization</span>
-              </div>
-              <div class="feature-item">
-                <span class="material-icons">cloud_off</span>
-                <span>100% local storage - no cloud dependency</span>
-              </div>
-              <div class="feature-item">
-                <span class="material-icons">file_present</span>
-                <span>Support for all file types</span>
-              </div>
-            </div>
+  <!-- About -->
+  <section class="section">
+    <h2 class="section-title">
+      <span class="icon icon-info"></span>
+      About
+    </h2>
+    <div class="card">
+      <div class="about-content">
+        <h3>Local File Vault</h3>
+        <p>Version 1.0.0</p>
+        <p>A secure document storage extension with encryption and password protection.</p>
+
+        <div class="features-list">
+          <div class="feature-item">
+            <span class="icon icon-encryption"></span>
+            <span>AES-GCM encryption for protected folders</span>
+          </div>
+          <div class="feature-item">
+            <span class="icon icon-layers"></span>
+            <span>Unlimited folder organization</span>
+          </div>
+          <div class="feature-item">
+            <span class="icon icon-cloud-off"></span>
+            <span>100% local storage - no cloud dependency</span>
+          </div>
+          <div class="feature-item">
+            <span class="icon icon-file"></span>
+            <span>Support for all file types</span>
           </div>
         </div>
-      </section>
-    </main>
+      </div>
+    </div>
+  </section>
+  </main>
   </div>
 
   <!-- Confirmation Modal -->
@@ -192,7 +141,7 @@
       <div class="modal-header">
         <h3 id="confirmTitle">Confirm Action</h3>
         <button id="closeConfirmModal" class="icon-btn">
-          <span class="material-icons">close</span>
+          <span class="icon icon-close"></span>
         </button>
       </div>
       <div class="modal-body">
@@ -218,4 +167,5 @@
 
   <script type="module" src="src/options.js"></script>
 </body>
+
 </html>

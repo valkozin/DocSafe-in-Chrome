@@ -1,7 +1,7 @@
 {
-  "name": "docsafe-chrome-extension",
+  "name": "local-file-vault",
   "version": "1.0.0",
-  "description": "Secure document vault Chrome extension with encryption and password protection",
+  "description": "Local File Vault - Password Protect & Encrypt Files Offline",
   "main": "background.js",
   "type": "module",
   "scripts": {
@@ -36,8 +36,13 @@
   },
   "jest": {
     "testEnvironment": "jsdom",
-    "setupFilesAfterEnv": ["<rootDir>/tests/setup.js"],
-    "moduleFileExtensions": ["js", "json"],
+    "setupFilesAfterEnv": [
+      "<rootDir>/tests/setup.js"
+    ],
+    "moduleFileExtensions": [
+      "js",
+      "json"
+    ],
     "transform": {
       "^.+\\.js$": "babel-jest"
     },
@@ -46,18 +51,25 @@
       "!src/**/*.test.js",
       "!**/node_modules/**"
     ],
-    "coverageReporters": ["text", "lcov", "html"],
+    "coverageReporters": [
+      "text",
+      "lcov",
+      "html"
+    ],
     "testMatch": [
       "<rootDir>/tests/**/*.test.js"
     ]
   },
   "babel": {
     "presets": [
-      ["@babel/preset-env", {
-        "targets": {
-          "chrome": "88"
+      [
+        "@babel/preset-env",
+        {
+          "targets": {
+            "chrome": "88"
+          }
         }
-      }]
+      ]
     ]
   },
   "eslintConfig": {
@@ -75,10 +87,18 @@
     "globals": {
       "chrome": "readonly",
       "indexedDB": "readonly",
-      "crypto": "readonly"
+      "crypto": "readonly",
+      "global": "readonly",
+      "process": "readonly",
+      "Buffer": "readonly"
     },
     "rules": {
-      "no-unused-vars": ["error", { "argsIgnorePattern": "^_" }],
+      "no-unused-vars": [
+        "error",
+        {
+          "argsIgnorePattern": "^_"
+        }
+      ],
       "no-console": "warn",
       "prefer-const": "error",
       "no-var": "error"

@@ -1,29 +1,42 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>DocSafe - Document Vault</title>
+  <title>Local File Vault</title>
   <link rel="stylesheet" href="css/popup.css">
-  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link rel="stylesheet" href="css/icons.css">
 </head>
+
 <body>
   <div class="app-container">
     <!-- Header -->
     <header class="header">
       <div class="header-title">
-        <span class="material-icons">security</span>
-        DocSafe
+        <span class="icon icon-security"></span>
+        Local File Vault
       </div>
       <div class="header-actions">
         <button id="optionsBtn" class="icon-btn" title="Settings">
-          <span class="material-icons">settings</span>
+          <span class="icon icon-settings"></span>
         </button>
         <button id="lockAllBtn" class="icon-btn" title="Lock All Folders">
-          <span class="material-icons">lock</span>
+          <span class="icon icon-lock"></span>
         </button>
       </div>
     </header>
+
+    <!-- Storage Usage Indicator -->
+    <div class="storage-indicator" id="storageIndicator" title="Click for detailed storage information">
+      <div class="storage-info">
+        <span class="icon icon-storage"></span>
+        <span id="storageText">Calculating storage...</span>
+      </div>
+      <div class="storage-bar-container">
+        <div id="storageBar" class="storage-bar"></div>
+      </div>
+    </div>
 
     <!-- Main Content -->
     <div class="main-content">
@@ -32,7 +45,7 @@
         <div class="sidebar-header">
           <h3>Folders</h3>
           <button id="addFolderBtn" class="icon-btn" title="Add Folder">
-            <span class="material-icons">add</span>
+            <span class="icon icon-add"></span>
           </button>
         </div>
         <div id="folderList" class="folder-list">
@@ -45,7 +58,7 @@
         <!-- Drag and Drop Area -->
         <div id="dropArea" class="drop-area">
           <div class="drop-content">
-            <span class="material-icons">cloud_upload</span>
+            <span class="icon icon-upload"></span>
             <p>Drag and drop files here or click to browse</p>
             <input type="file" id="fileInput" multiple hidden>
           </div>
@@ -57,7 +70,7 @@
             <h2 id="currentFolderName">Select a folder</h2>
             <div class="folder-actions">
               <button id="deleteFolderBtn" class="icon-btn delete-btn" title="Delete Folder" style="display: none;">
-                <span class="material-icons">delete</span>
+                <span class="icon icon-delete"></span>
               </button>
             </div>
           </div>
@@ -70,7 +83,7 @@
 
         <!-- Empty State -->
         <div id="emptyState" class="empty-state">
-          <span class="material-icons">folder_open</span>
+          <span class="icon icon-folder-open"></span>
           <p>No files in this folder</p>
         </div>
       </main>
@@ -83,7 +96,7 @@
       <div class="modal-header">
         <h3 id="passwordModalTitle">Enter Password</h3>
         <button id="closePasswordModal" class="icon-btn">
-          <span class="material-icons">close</span>
+          <span class="icon icon-close"></span>
         </button>
       </div>
       <div class="modal-body">
@@ -106,7 +119,7 @@
       <div class="modal-header">
         <h3>Create New Folder</h3>
         <button id="closeNewFolderModal" class="icon-btn">
-          <span class="material-icons">close</span>
+          <span class="icon icon-close"></span>
         </button>
       </div>
       <div class="modal-body">
@@ -146,7 +159,7 @@
       <div class="modal-header">
         <h3>Rename File</h3>
         <button id="closeRenameModal" class="icon-btn">
-          <span class="material-icons">close</span>
+          <span class="icon icon-close"></span>
         </button>
       </div>
       <div class="modal-body">
@@ -176,4 +189,5 @@
 
   <script type="module" src="src/popup.js"></script>
 </body>
+
 </html>

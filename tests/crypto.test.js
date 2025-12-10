@@ -5,7 +5,6 @@
 import {
   generateSalt,
   generateIV,
-  deriveKey,
   hashPassword,
   verifyPassword,
   encryptData,
@@ -46,7 +45,7 @@ describe('Crypto Utilities', () => {
       const original = new Uint8Array([1, 2, 3, 4, 5]).buffer;
       const base64 = arrayBufferToBase64(original);
       const result = base64ToArrayBuffer(base64);
-      
+
       expect(new Uint8Array(result)).toEqual(new Uint8Array(original));
     });
 
@@ -54,7 +53,7 @@ describe('Crypto Utilities', () => {
       const original = new Uint8Array([10, 20, 30, 40, 50]);
       const base64 = uint8ArrayToBase64(original);
       const result = base64ToUint8Array(base64);
-      
+
       expect(result).toEqual(original);
     });
 
@@ -62,7 +61,7 @@ describe('Crypto Utilities', () => {
       const empty = new Uint8Array([]);
       const base64 = uint8ArrayToBase64(empty);
       const result = base64ToUint8Array(base64);
-      
+
       expect(result.length).toBe(0);
     });
   });
@@ -70,13 +69,13 @@ describe('Crypto Utilities', () => {
   describe('Password Operations', () => {
     // Note: These tests would require proper WebCrypto API mocking
     // In a real test environment, you would need to mock crypto.subtle methods
-    
+
     test('hashPassword should handle different passwords', async () => {
       // Mock responses are already set up in setup.js
       const salt = generateSalt();
       const hash1 = await hashPassword('password1', salt);
       const hash2 = await hashPassword('password2', salt);
-      
+
       expect(hash1).toBeInstanceOf(Uint8Array);
       expect(hash2).toBeInstanceOf(Uint8Array);
       expect(global.crypto.subtle.importKey).toHaveBeenCalled();
@@ -85,10 +84,10 @@ describe('Crypto Utilities', () => {
 
     test('verifyPassword should work correctly', async () => {
       const testHash = new Uint8Array([1, 2, 3, 4]);
-      
+
       const salt = generateSalt();
       const password = 'testpassword';
-      
+
       const isValid = await verifyPassword(password, salt, testHash);
       expect(typeof isValid).toBe('boolean');
     });
@@ -99,7 +98,7 @@ describe('Crypto Utilities', () => {
       const testFile = new Blob(['test content'], { type: 'text/plain' });
       const salt = generateSalt();
       const password = 'testpassword';
-      
+
       const encryptedFile = await encryptFile(testFile, password, salt);
       expect(encryptedFile).toBeInstanceOf(Blob);
       expect(encryptedFile.type).toBe('application/octet-stream');
@@ -110,7 +109,7 @@ describe('Crypto Utilities', () => {
       const salt = generateSalt();
       const password = 'testpassword';
       const originalType = 'text/plain';
-      
+
       const decryptedFile = await decryptFile(encryptedBlob, password, salt, originalType);
       expect(decryptedFile).toBeInstanceOf(Blob);
       expect(decryptedFile.type).toBe(originalType);
@@ -122,7 +121,7 @@ describe('Crypto Utilities', () => {
       const testData = 'Hello, World!';
       const salt = generateSalt();
       const password = 'testpassword';
-      
+
       const encrypted = await encryptData(testData, password, salt);
       expect(encrypted).toBeInstanceOf(Uint8Array);
       expect(encrypted.length).toBeGreaterThan(12); // At least IV length
@@ -132,7 +131,7 @@ describe('Crypto Utilities', () => {
       const testBlob = new Blob(['test content']);
       const salt = generateSalt();
       const password = 'testpassword';
-      
+
       const encrypted = await encryptData(testBlob, password, salt);
       expect(encrypted).toBeInstanceOf(Uint8Array);
     });
@@ -141,7 +140,7 @@ describe('Crypto Utilities', () => {
       const testBuffer = new TextEncoder().encode('test').buffer;
       const salt = generateSalt();
       const password = 'testpassword';
-      
+
       const encrypted = await encryptData(testBuffer, password, salt);
       expect(encrypted).toBeInstanceOf(Uint8Array);
     });
@@ -149,7 +148,7 @@ describe('Crypto Utilities', () => {
     test('encryptData should throw for unsupported types', async () => {
       const salt = generateSalt();
       const password = 'testpassword';
-      
+
       await expect(encryptData(123, password, salt)).rejects.toThrow('Unsupported data type for encryption');
       await expect(encryptData(null, password, salt)).rejects.toThrow('Unsupported data type for encryption');
       await expect(encryptData(undefined, password, salt)).rejects.toThrow('Unsupported data type for encryption');
@@ -164,7 +163,7 @@ describe('Crypto Utilities', () => {
       const fakeEncryptedData = new Uint8Array(20); // 12 bytes IV + 8 bytes data
       const salt = generateSalt();
       const password = 'wrongpassword';
-      
+
       await expect(decryptData(fakeEncryptedData, password, salt))
         .rejects.toThrow('Decryption failed - invalid password or corrupted data');
     });
@@ -180,12 +179,12 @@ export const TestUtils = {
   async createEncryptedTestFile(content = 'test content', password = 'testpass') {
     const file = await this.createTestFile(content);
     const salt = generateSalt();
-    
+
     // Mock encryption for testing
     crypto.subtle.importKey = jest.fn().mockResolvedValue({});
     crypto.subtle.deriveKey = jest.fn().mockResolvedValue({});
     crypto.subtle.encrypt = jest.fn().mockResolvedValue(new TextEncoder().encode(content).buffer);
-    
+
     return {
       file: await encryptFile(file, password, salt),
       salt,

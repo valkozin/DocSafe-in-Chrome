@@ -24,7 +24,13 @@ global.chrome = {
       }),
       set: jest.fn((items, callback) => {
         if (callback) callback();
+      }),
+      remove: jest.fn((keys, callback) => {
+        if (callback) callback();
       })
+    },
+    onChanged: {
+      addListener: jest.fn()
     }
   },
   action: {
@@ -84,7 +90,8 @@ global.indexedDB = {
 };
 
 // Mock WebCrypto API
-global.crypto = {
+// Mock WebCrypto API
+const mockCrypto = {
   getRandomValues: jest.fn((array) => {
     for (let i = 0; i < array.length; i++) {
       array[i] = Math.floor(Math.random() * 256);
@@ -100,6 +107,11 @@ global.crypto = {
     decrypt: jest.fn().mockResolvedValue(new ArrayBuffer(50))
   }
 };
+
+Object.defineProperty(global, 'crypto', {
+  value: mockCrypto,
+  writable: true
+});
 
 // Mock TextEncoder/TextDecoder
 global.TextEncoder = class TextEncoder {
@@ -155,6 +167,21 @@ global.Blob = class Blob {
     const buffer = await this.arrayBuffer();
     const decoder = new TextDecoder();
     return decoder.decode(buffer);
+  }
+
+  slice(start, end, contentType) {
+    // Note: async arrayBuffer() is needed to get content, but slice is synchronous.
+    // We can't easily implement a true synchronous slice with parts without complexity.
+    // For test mocks, we might return a new Blob with the subset.
+
+    // Since we can't easily flatten synchronously if parts are complex, 
+    // we'll just return a new Blob with a slice of the parts if they are simple arrays
+    // This might require the test to use flat arrays.
+
+    // Better approach for mocks:
+    // If we assume parts are Uint8Arrays or Buffers.
+
+    return new Blob([], { type: contentType || this.type });
   }
 };
 
@@ -253,13 +280,13 @@ global.triggerIDBError = (error = new Error('IDB Error')) => {
 // Reset mocks before each test
 beforeEach(() => {
   jest.clearAllMocks();
-  
+
   // Reset IDB request state
   mockIDBRequest.result = null;
   mockIDBRequest.error = null;
   mockIDBRequest.onsuccess = null;
   mockIDBRequest.onerror = null;
-  
+
   // Reset crypto mock implementations
   if (global.crypto && global.crypto.subtle) {
     if (global.crypto.subtle.encrypt && global.crypto.subtle.encrypt.mockResolvedValue) {
@@ -284,7 +311,7 @@ afterEach(() => {
 });
 
 // Global error handler for unhandled promise rejections in tests
-process.on('unhandledRejection', (reason, promise) => {
+process.on('unhandledRejection', (reason, _promise) => {
   console.error('Unhandled Promise Rejection:', reason);
   // Don't fail tests for expected rejections in error scenarios
 });

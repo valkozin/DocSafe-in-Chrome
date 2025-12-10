@@ -3,15 +3,18 @@
  */
 
 const DB_NAME = 'DocSafeDB';
-const DB_VERSION = 1;
+const DB_VERSION = 2;
 const STORES = {
   FILES: 'files',
   FOLDERS: 'folders',
-  METADATA: 'metadata'
+  METADATA: 'metadata',
+  FILE_CHUNKS: 'file_chunks'
 };
 
-class DocSafeDB {
+class LocalFileVaultDB {
   constructor() {
+    this.dbName = 'LocalFileVaultDB';
+    this.dbVersion = 2;
     this.db = null;
   }
 
@@ -45,6 +48,12 @@ class DocSafeDB {
         if (!db.objectStoreNames.contains(STORES.METADATA)) {
           db.createObjectStore(STORES.METADATA, { keyPath: 'key' });
         }
+
+        // File Chunks store (v2) - stores encrypted file parts
+        if (!db.objectStoreNames.contains(STORES.FILE_CHUNKS)) {
+          const chunksStore = db.createObjectStore(STORES.FILE_CHUNKS, { keyPath: ['fileId', 'chunkIndex'] });
+          chunksStore.createIndex('fileId', 'fileId', { unique: false });
+        }
       };
     });
   }
@@ -59,7 +68,7 @@ class DocSafeDB {
     if (!id) {
       throw new Error('File ID is required');
     }
-    
+
     const transaction = this.db.transaction([STORES.FILES], 'readonly');
     const store = transaction.objectStore(STORES.FILES);
     return new Promise((resolve, reject) => {
@@ -85,7 +94,7 @@ class DocSafeDB {
     const transaction = this.db.transaction([STORES.FILES], 'readonly');
     const store = transaction.objectStore(STORES.FILES);
     const index = store.index('folderId');
-    
+
     return new Promise((resolve, reject) => {
       const request = index.getAll(folderId);
       request.onsuccess = () => resolve(request.result);
@@ -103,7 +112,7 @@ class DocSafeDB {
     if (!id) {
       throw new Error('Folder ID is required');
     }
-    
+
     const transaction = this.db.transaction([STORES.FOLDERS], 'readonly');
     const store = transaction.objectStore(STORES.FOLDERS);
     return new Promise((resolve, reject) => {
@@ -128,7 +137,7 @@ class DocSafeDB {
   async getAllFolders() {
     const transaction = this.db.transaction([STORES.FOLDERS], 'readonly');
     const store = transaction.objectStore(STORES.FOLDERS);
-    
+
     return new Promise((resolve, reject) => {
       const request = store.getAll();
       request.onsuccess = () => resolve(request.result);
@@ -142,10 +151,53 @@ class DocSafeDB {
     return store.put({ key, value });
   }
 
+  async addFileChunk(chunk) {
+    const transaction = this.db.transaction([STORES.FILE_CHUNKS], 'readwrite');
+    const store = transaction.objectStore(STORES.FILE_CHUNKS);
+    return store.put(chunk);
+  }
+
+  async getFileChunks(fileId) {
+    const transaction = this.db.transaction([STORES.FILE_CHUNKS], 'readonly');
+    const store = transaction.objectStore(STORES.FILE_CHUNKS);
+    const index = store.index('fileId');
+
+    return new Promise((resolve, reject) => {
+      const request = index.getAll(fileId);
+      request.onsuccess = () => {
+        // Sort by chunkIndex to ensure order
+        const chunks = request.result.sort((a, b) => a.chunkIndex - b.chunkIndex);
+        resolve(chunks);
+      };
+      request.onerror = () => reject(request.error);
+    });
+  }
+
+  async deleteChunksByFile(fileId) {
+    const transaction = this.db.transaction([STORES.FILE_CHUNKS], 'readwrite');
+    const store = transaction.objectStore(STORES.FILE_CHUNKS);
+    const index = store.index('fileId');
+
+    return new Promise((resolve, reject) => {
+      const request = index.openKeyCursor(IDBKeyRange.only(fileId));
+
+      request.onsuccess = (event) => {
+        const cursor = event.target.result;
+        if (cursor) {
+          store.delete(cursor.primaryKey);
+          cursor.continue();
+        } else {
+          resolve();
+        }
+      };
+      request.onerror = () => reject(request.error);
+    });
+  }
+
   async getMetadata(key) {
     const transaction = this.db.transaction([STORES.METADATA], 'readonly');
     const store = transaction.objectStore(STORES.METADATA);
-    
+
     return new Promise((resolve, reject) => {
       const request = store.get(key);
       request.onsuccess = () => resolve(request.result?.value);
@@ -154,12 +206,13 @@ class DocSafeDB {
   }
 
   async clearAll() {
-    const transaction = this.db.transaction([STORES.FILES, STORES.FOLDERS, STORES.METADATA], 'readwrite');
-    
+    const transaction = this.db.transaction([STORES.FILES, STORES.FOLDERS, STORES.METADATA, STORES.FILE_CHUNKS], 'readwrite');
+
     await Promise.all([
       transaction.objectStore(STORES.FILES).clear(),
       transaction.objectStore(STORES.FOLDERS).clear(),
-      transaction.objectStore(STORES.METADATA).clear()
+      transaction.objectStore(STORES.METADATA).clear(),
+      transaction.objectStore(STORES.FILE_CHUNKS).clear()
     ]);
   }
 
@@ -172,6 +225,6 @@ class DocSafeDB {
 }
 
 // Singleton instance
-const dbInstance = new DocSafeDB();
+const dbInstance = new LocalFileVaultDB();
 
 export default dbInstance;

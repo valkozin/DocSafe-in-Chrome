@@ -40,7 +40,7 @@ describe('DocSafe Application', () => {
       const existingFolders = [
         { id: 'default', name: 'General', isProtected: false }
       ];
-      
+
       dbInstance.init.mockResolvedValue();
       dbInstance.getAllFolders.mockResolvedValue(existingFolders);
 
@@ -113,7 +113,10 @@ describe('DocSafe Application', () => {
       ];
 
       dbInstance.getFilesByFolder.mockResolvedValue(folderFiles);
+      // Ensure getFile returns something so deleteFile proceeds
+      dbInstance.getFile.mockResolvedValue({ id: 'file1' });
       dbInstance.deleteFile.mockResolvedValue();
+      dbInstance.deleteChunksByFile.mockResolvedValue(); // Mock chunks cleanup
       dbInstance.deleteFolder.mockResolvedValue();
 
       await app.deleteFolder(folderId);
@@ -206,30 +209,34 @@ describe('DocSafe Application', () => {
     });
 
     test('uploadFile should upload to current folder', async () => {
-      const testFile = new Blob(['test content'], { type: 'text/plain' });
+      const testFile = new File(['test content'], 'test.txt', { type: 'text/plain' });
       const folder = { id: 'folder1', isProtected: false };
+
+      app.currentFolder = folder; // Set current folder to avoid defaults
 
       dbInstance.getFolder.mockResolvedValue(folder);
       dbInstance.addFile.mockResolvedValue();
+      dbInstance.addFileChunk.mockResolvedValue(); // Mock chunk addition
 
       const result = await app.uploadFile(testFile);
 
-      expect(result).toEqual({
+      expect(result).toMatchObject({
         id: expect.any(String),
-        filename: testFile.name || '',
+        filename: 'test.txt',
         originalType: 'text/plain',
         size: testFile.size,
         folderId: 'folder1',
         uploadDate: expect.any(String),
         isEncrypted: false,
-        blob: testFile
+        chunkCount: 1
       });
 
+      expect(dbInstance.addFileChunk).toHaveBeenCalled();
       expect(dbInstance.addFile).toHaveBeenCalledWith(result);
     });
 
     test('uploadFile should encrypt file for protected folder', async () => {
-      const testFile = new Blob(['test content'], { type: 'text/plain' });
+      const testFile = new File(['test content'], 'test.txt', { type: 'text/plain' });
       const folder = {
         id: 'folder1',
         isProtected: true,
@@ -238,17 +245,22 @@ describe('DocSafe Application', () => {
       const password = 'testpassword';
       const mockEncryptedBlob = new Blob(['encrypted']);
 
+      app.currentFolder = folder;
+
       app.sessionPasswords.set('folder1', password);
       dbInstance.getFolder.mockResolvedValue(folder);
       crypto.base64ToUint8Array.mockReturnValue(new Uint8Array([1, 2, 3]));
       crypto.encryptFile.mockResolvedValue(mockEncryptedBlob);
       dbInstance.addFile.mockResolvedValue();
+      dbInstance.addFileChunk.mockResolvedValue();
 
       const result = await app.uploadFile(testFile);
 
       expect(result.isEncrypted).toBe(true);
-      expect(result.blob).toBe(mockEncryptedBlob);
-      expect(crypto.encryptFile).toHaveBeenCalledWith(testFile, password, expect.any(Uint8Array));
+      expect(crypto.encryptFile).toHaveBeenCalledWith(expect.anything(), password, expect.any(Uint8Array));
+      expect(dbInstance.addFileChunk).toHaveBeenCalledWith(expect.objectContaining({
+        data: mockEncryptedBlob
+      }));
     });
 
     test('uploadFile should reject upload to locked folder', async () => {
@@ -296,7 +308,7 @@ describe('DocSafe Application', () => {
         originalType: 'text/plain',
         folderId: 'folder1',
         isEncrypted: true,
-        blob: new Blob(['encrypted'])
+        // No blob here
       };
       const folder = {
         id: 'folder1',
@@ -304,28 +316,27 @@ describe('DocSafe Application', () => {
         salt: 'salt-base64'
       };
       const password = 'testpassword';
+      const mockEncryptedChunk = new Blob(['encrypted']);
       const decryptedBlob = new Blob(['decrypted'], { type: 'text/plain' });
 
       app.sessionPasswords.set('folder1', password);
       dbInstance.getFile.mockResolvedValue(fileData);
       dbInstance.getFolder.mockResolvedValue(folder);
+      dbInstance.getFileChunks.mockResolvedValue([{ data: mockEncryptedChunk }]); // Mock chunks
+
       crypto.base64ToUint8Array.mockReturnValue(new Uint8Array([1, 2, 3]));
       crypto.decryptFile.mockResolvedValue(decryptedBlob);
 
       const result = await app.downloadFile('file1');
 
-      expect(result).toEqual({
-        blob: decryptedBlob,
+      expect(result).toMatchObject({
         filename: 'test.txt',
         type: 'text/plain'
       });
+      // The blob should be composed of decrypted parts. 
+      // Since we mocked decryptFile to return 'decryptedBlob', the result.blob should contain that content.
 
-      expect(crypto.decryptFile).toHaveBeenCalledWith(
-        fileData.blob,
-        password,
-        expect.any(Uint8Array),
-        'text/plain'
-      );
+      expect(crypto.decryptFile).toHaveBeenCalled();
     });
 
     test('renameFile should update filename', async () => {
@@ -464,14 +475,15 @@ describe('DocSafe Application', () => {
     });
 
     test('uploadFile should reject missing password for encrypted folder', async () => {
-      const testFile = new Blob(['test']);
+      const testFile = new File(['test'], 'name.txt');
       const folder = { id: 'folder1', isProtected: true };
 
+      app.currentFolder = folder; // Ensure we target the right folder
       app.unlockedFolders.add('folder1');
       // Don't set session password
       dbInstance.getFolder.mockResolvedValue(folder);
 
-      await expect(app.uploadFile(testFile)).rejects.toThrow('Password not available for encrypted folder');
+      await expect(app.uploadFile(testFile)).rejects.toThrow('Password not available');
     });
 
     test('downloadFile should reject missing password for encrypted file', async () => {

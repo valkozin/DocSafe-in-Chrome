@@ -35,6 +35,74 @@ body {
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
+/* Storage Usage Indicator */
+.storage-indicator {
+  background: #fff;
+  padding: 12px 16px;
+  border-bottom: 1px solid #e0e0e0;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.storage-indicator:hover {
+  background: #f8f9fa;
+}
+
+.storage-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+  font-size: 13px;
+  color: #666;
+}
+
+.storage-info .material-icons {
+  font-size: 16px;
+  color: #1976d2;
+}
+
+.storage-bar-container {
+  width: 100%;
+  height: 6px;
+  background: #f0f0f0;
+  border-radius: 3px;
+  overflow: hidden;
+  position: relative;
+}
+
+.storage-bar {
+  height: 100%;
+  background: linear-gradient(90deg, #4caf50 0%, #8bc34a 50%, #ffeb3b 75%, #ff9800 90%, #f44336 100%);
+  border-radius: 3px;
+  width: 0%;
+  transition: width 0.5s ease-in-out;
+  position: relative;
+}
+
+.storage-bar.low {
+  background: #4caf50;
+}
+
+.storage-bar.medium {
+  background: #ff9800;
+}
+
+.storage-bar.high {
+  background: #f44336;
+}
+
+.storage-bar.critical {
+  background: #d32f2f;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% { opacity: 1; }
+  50% { opacity: 0.7; }
+  100% { opacity: 1; }
+}
+
 .header-title {
   display: flex;
   align-items: center;
