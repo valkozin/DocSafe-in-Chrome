@@ -1,0 +1,28 @@
+Turn your browser into a secure, private file safe. "Local File Vault" allows you to password protect and encrypt files without them ever leaving your computer.
+
+🔒 100% PRIVATE & OFFLINE - NO DATA UPLOAD
+Unlike other tools that upload your files to a cloud server, Local File Vault processes everything locally within Chrome. Your files never touch the internet. You are the only one who holds the key.
+
+📂 HOW IT WORKS
+1. Open the extension.
+2. Drag and drop any file (Photos, PDFs, Docs, etc.) into the vault.
+3. Set a strong password.
+4. Click "Encrypt" to download a secured version of your file immediately.
+To decrypt, simply drag your locked file back into the extension and enter your password.
+
+✨ KEY FEATURES
+★ Military-Grade Security: Uses AES-256 encryption, the industry standard for securing sensitive data.
+★ Works Offline: No internet connection required. Perfect for travel or air-gapped security.
+★ Zero-Knowledge Privacy: We don't store your passwords or files. If you lose your password, no one (not even us) can recover it.
+★ Fast & Lightweight: Encrypts large files in seconds without slowing down your browser.
+★ No Registration Needed: No accounts, no emails, no subscriptions. Just install and secure.
+
+🚀 USE CASES
+- Password protect PDF documents containing financial or personal info.
+- Encrypt private photos and videos before sharing them.
+- Securely store sensitive work files on a shared computer.
+- Create a digital lockbox for your seed phrases, keys, or journals.
+
+This extension is perfect for users searching for: file locker, folder lock, encrypt pdf locally, password protect folder, browser encryption tool, and offline file safe.
+
+Download "Local File Vault" today and take back control of your digital privacy.

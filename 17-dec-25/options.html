@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Local File Vault - Settings</title>
+  <link rel="stylesheet" href="css/options.css">
+  <link rel="stylesheet" href="css/icons.css">
+</head>
+
+<body>
+  <div class="options-container">
+    <!-- Header -->
+    <header class="header">
+      <div class="header-title">
+        <span class="icon icon-security"></span>
+        Local File Vault Settings
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Storage Information -->
+      <section class="section">
+        <h2 class="section-title">
+          <span class="icon icon-storage"></span>
+          Storage Information
+        </h2>
+        <div class="card">
+          <div class="stats-grid">
+            <div class="stat-item">
+              <div class="stat-value" id="totalFiles">-</div>
+              <div class="stat-label">Total Files</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-value" id="totalSize">-</div>
+              <div class="stat-label">Storage Used</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-value" id="folderCount">-</div>
+              <div class="stat-label">Folders</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-value" id="protectedFolders">-</div>
+              <div class="stat-label">Protected Folders</div>
+            </div>
+          </div>
+          <button id="refreshStatsBtn" class="btn btn-secondary">
+            <span class="icon icon-refresh"></span>
+            Refresh
+          </button>
+        </div>
+      </section>
+
+      </select>
+  </div>
+  </div>
+  </section>
+
+  <!-- Security Settings -->
+  <section class="section">
+    <h2 class="section-title">
+      <span class="icon icon-security"></span>
+      Security Settings
+    </h2>
+    <div class="card">
+      <div class="setting-item">
+        <div class="setting-info">
+          <h3>Auto-lock when extension is closed</h3>
+          <p>Automatically lock all protected folders when you close the extension popup or dashboard</p>
+        </div>
+        <label class="toggle">
+          <input type="checkbox" id="autoLockToggle" checked>
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+    </div>
+  </section>
+
+  <!-- Danger Zone -->
+  <section class="section">
+    <h2 class="section-title danger">
+      <span class="icon icon-warning"></span>
+      Danger Zone
+    </h2>
+    <div class="card danger-card">
+      <div class="action-item">
+        <div class="action-info">
+          <h3>Reset Vault</h3>
+          <p><strong>Warning:</strong> This will permanently delete all files, folders, and settings. This action
+            cannot be undone.</p>
+        </div>
+        <button id="resetVaultBtn" class="btn btn-danger">
+          <span class="icon icon-delete"></span>
+          Reset Vault
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- About -->
+  <section class="section">
+    <h2 class="section-title">
+      <span class="icon icon-info"></span>
+      About
+    </h2>
+    <div class="card">
+      <div class="about-content">
+        <h3>Local File Vault</h3>
+        <p>Version 1.0.0</p>
+        <p>A secure document storage extension with encryption and password protection.</p>
+
+        <div class="features-list">
+          <div class="feature-item">
+            <span class="icon icon-encryption"></span>
+            <span>AES-GCM encryption for protected folders</span>
+          </div>
+          <div class="feature-item">
+            <span class="icon icon-layers"></span>
+            <span>Unlimited folder organization</span>
+          </div>
+          <div class="feature-item">
+            <span class="icon icon-cloud-off"></span>
+            <span>100% local storage - no cloud dependency</span>
+          </div>
+          <div class="feature-item">
+            <span class="icon icon-file"></span>
+            <span>Support for all file types</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+  </main>
+  </div>
+
+  <!-- Confirmation Modal -->
+  <div id="confirmModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="confirmTitle">Confirm Action</h3>
+        <button id="closeConfirmModal" class="icon-btn">
+          <span class="icon icon-close"></span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p id="confirmMessage">Are you sure you want to proceed?</p>
+      </div>
+      <div class="modal-footer">
+        <button id="cancelConfirmBtn" class="btn btn-secondary">Cancel</button>
+        <button id="confirmActionBtn" class="btn btn-danger">Confirm</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Progress Indicator -->
+  <div id="progressIndicator" class="progress-indicator" style="display: none;">
+    <div class="progress-content">
+      <div class="spinner"></div>
+      <span id="progressText">Processing...</span>
+    </div>
+  </div>
+
+  <!-- Toast Notifications -->
+  <div id="toastContainer" class="toast-container"></div>
+
+  <script type="module" src="src/options.js"></script>
+</body>
+
+</html>

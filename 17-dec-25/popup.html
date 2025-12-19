@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Local File Vault</title>
+  <link rel="stylesheet" href="css/popup.css">
+  <link rel="stylesheet" href="css/icons.css">
+</head>
+
+<body>
+  <div class="app-container">
+    <!-- Header -->
+    <header class="header">
+      <div class="header-title">
+        <span class="icon icon-security"></span>
+        Local File Vault
+      </div>
+      <div class="header-actions">
+        <button id="optionsBtn" class="icon-btn" title="Settings">
+          <span class="icon icon-settings"></span>
+        </button>
+        <button id="lockAllBtn" class="icon-btn" title="Lock All Folders">
+          <span class="icon icon-lock"></span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Storage Usage Indicator -->
+    <div class="storage-indicator" id="storageIndicator" title="Click for detailed storage information">
+      <div class="storage-info">
+        <span class="icon icon-storage"></span>
+        <span id="storageText">Calculating storage...</span>
+      </div>
+      <div class="storage-bar-container">
+        <div id="storageBar" class="storage-bar"></div>
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+      <!-- Sidebar -->
+      <aside class="sidebar">
+        <div class="sidebar-header">
+          <h3>Folders</h3>
+          <button id="addFolderBtn" class="icon-btn" title="Add Folder">
+            <span class="icon icon-add"></span>
+          </button>
+        </div>
+        <div id="folderList" class="folder-list">
+          <!-- Folders will be dynamically added here -->
+        </div>
+      </aside>
+
+      <!-- Main Panel -->
+      <main class="main-panel">
+        <!-- Drag and Drop Area -->
+        <div id="dropArea" class="drop-area">
+          <div class="drop-content">
+            <span class="icon icon-upload"></span>
+            <p>Drag and drop files here or click to browse</p>
+            <input type="file" id="fileInput" multiple hidden>
+          </div>
+        </div>
+
+        <!-- Current Folder Info -->
+        <div id="currentFolderInfo" class="current-folder-info">
+          <div class="folder-header">
+            <h2 id="currentFolderName">Select a folder</h2>
+            <div class="folder-actions">
+              <button id="deleteFolderBtn" class="icon-btn delete-btn" title="Delete Folder" style="display: none;">
+                <span class="icon icon-delete"></span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- File List -->
+        <div id="fileList" class="file-list">
+          <!-- Files will be dynamically added here -->
+        </div>
+
+        <!-- Empty State -->
+        <div id="emptyState" class="empty-state">
+          <span class="icon icon-folder-open"></span>
+          <p>No files in this folder</p>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- Password Modal -->
+  <div id="passwordModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="passwordModalTitle">Enter Password</h3>
+        <button id="closePasswordModal" class="icon-btn">
+          <span class="icon icon-close"></span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="input-group">
+          <label for="passwordInput">Password:</label>
+          <input type="password" id="passwordInput" class="input" placeholder="Enter folder password">
+        </div>
+        <div id="passwordError" class="error-message"></div>
+      </div>
+      <div class="modal-footer">
+        <button id="cancelPasswordBtn" class="btn btn-secondary">Cancel</button>
+        <button id="confirmPasswordBtn" class="btn btn-primary">Unlock</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- New Folder Modal -->
+  <div id="newFolderModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Create New Folder</h3>
+        <button id="closeNewFolderModal" class="icon-btn">
+          <span class="icon icon-close"></span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="input-group">
+          <label for="folderNameInput">Folder Name:</label>
+          <input type="text" id="folderNameInput" class="input" placeholder="Enter folder name">
+        </div>
+        <div class="input-group">
+          <label class="checkbox-label">
+            <input type="checkbox" id="protectFolderCheckbox">
+            <span class="checkmark"></span>
+            Password protect this folder
+          </label>
+        </div>
+        <div id="passwordSection" class="password-section" style="display: none;">
+          <div class="input-group">
+            <label for="newFolderPassword">Password:</label>
+            <input type="password" id="newFolderPassword" class="input" placeholder="Enter password">
+          </div>
+          <div class="input-group">
+            <label for="confirmFolderPassword">Confirm Password:</label>
+            <input type="password" id="confirmFolderPassword" class="input" placeholder="Confirm password">
+          </div>
+        </div>
+        <div id="newFolderError" class="error-message"></div>
+      </div>
+      <div class="modal-footer">
+        <button id="cancelNewFolderBtn" class="btn btn-secondary">Cancel</button>
+        <button id="createFolderBtn" class="btn btn-primary">Create</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Rename File Modal -->
+  <div id="renameModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Rename File</h3>
+        <button id="closeRenameModal" class="icon-btn">
+          <span class="icon icon-close"></span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="input-group">
+          <label for="newFilenameInput">New Name:</label>
+          <input type="text" id="newFilenameInput" class="input" placeholder="Enter new filename">
+        </div>
+        <div id="renameError" class="error-message"></div>
+      </div>
+      <div class="modal-footer">
+        <button id="cancelRenameBtn" class="btn btn-secondary">Cancel</button>
+        <button id="confirmRenameBtn" class="btn btn-primary">Rename</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Progress Indicator -->
+  <div id="progressIndicator" class="progress-indicator" style="display: none;">
+    <div class="progress-content">
+      <div class="spinner"></div>
+      <span id="progressText">Processing...</span>
+    </div>
+  </div>
+
+  <!-- Toast Notifications -->
+  <div id="toastContainer" class="toast-container"></div>
+
+  <script type="module" src="src/popup.js"></script>
+</body>
+
+</html>
