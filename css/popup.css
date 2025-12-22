@@ -6,22 +6,32 @@
   box-sizing: border-box;
 }
 
+html,
+body {
+  width: 500px !important;
+  height: 400px !important;
+  max-width: 500px !important;
+  max-height: 400px !important;
+  overflow: hidden !important;
+}
+
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
   font-size: 14px;
   line-height: 1.4;
   color: #333;
   background: #f8f9fa;
-  width: 800px;
-  height: 600px;
-  overflow: hidden;
 }
 
 /* App Container */
 .app-container {
   display: flex;
   flex-direction: column;
-  height: 100vh;
+  width: 500px !important;
+  height: 400px !important;
+  max-width: 500px !important;
+  max-height: 400px !important;
+  overflow: hidden !important;
 }
 
 /* Header */
@@ -29,19 +39,23 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12px 16px;
+  padding: 4px 12px;
   background: #fff;
   border-bottom: 1px solid #e0e0e0;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  height: 36px;
+  flex-shrink: 0;
 }
 
 /* Storage Usage Indicator */
 .storage-indicator {
   background: #fff;
-  padding: 12px 16px;
+  padding: 4px 12px;
   border-bottom: 1px solid #e0e0e0;
   cursor: pointer;
   transition: background-color 0.2s ease;
+  height: 40px;
+  flex-shrink: 0;
 }
 
 .storage-indicator:hover {
@@ -57,8 +71,9 @@ body {
   color: #666;
 }
 
-.storage-info .material-icons {
-  font-size: 16px;
+.storage-info .icon {
+  width: 16px;
+  height: 16px;
   color: #1976d2;
 }
 
@@ -98,9 +113,17 @@ body {
 }
 
 @keyframes pulse {
-  0% { opacity: 1; }
-  50% { opacity: 0.7; }
-  100% { opacity: 1; }
+  0% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.7;
+  }
+
+  100% {
+    opacity: 1;
+  }
 }
 
 .header-title {
@@ -110,11 +133,14 @@ body {
   font-size: 16px;
   font-weight: 600;
   color: #1976d2;
+  min-width: 0;
 }
 
 .header-actions {
   display: flex;
   gap: 4px;
+  flex-shrink: 0;
+  margin-left: auto;
 }
 
 /* Main Content */
@@ -126,7 +152,8 @@ body {
 
 /* Sidebar */
 .sidebar {
-  width: 240px;
+  width: 160px !important;
+  flex-shrink: 0;
   background: #fff;
   border-right: 1px solid #e0e0e0;
   display: flex;
@@ -137,8 +164,9 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px;
+  padding: 8px 12px;
   border-bottom: 1px solid #e0e0e0;
+  height: 36px;
 }
 
 .sidebar-header h3 {
@@ -150,11 +178,13 @@ body {
 .folder-list {
   flex: 1;
   overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-gutter: stable;
   padding: 8px 0;
 }
 
 .folder-item {
-  padding: 12px 16px;
+  padding: 6px 12px;
   cursor: pointer;
   transition: background-color 0.2s;
   border-left: 3px solid transparent;
@@ -173,21 +203,27 @@ body {
   display: flex;
   align-items: center;
   gap: 8px;
+  min-width: 0;
 }
 
 .folder-icon {
   color: #666;
-  font-size: 18px;
+  width: 18px;
+  height: 18px;
 }
 
 .folder-name {
   flex: 1;
   font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .lock-icon {
   color: #ff9800;
-  font-size: 16px;
+  width: 16px;
+  height: 16px;
 }
 
 /* Main Panel */
@@ -196,18 +232,22 @@ body {
   display: flex;
   flex-direction: column;
   background: #f8f9fa;
+  min-width: 0;
 }
 
 /* Drop Area */
 .drop-area {
-  margin: 16px;
-  padding: 32px;
-  border: 2px dashed #ddd;
-  border-radius: 8px;
+  margin: 8px auto;
+  padding: 12px;
+  border: 1px dashed #ddd;
+  border-radius: 6px;
   background: #fff;
   text-align: center;
   cursor: pointer;
   transition: all 0.2s;
+  width: 300px !important;
+  max-width: 90%;
+  flex-shrink: 0;
 }
 
 .drop-area:hover,
@@ -222,10 +262,14 @@ body {
   align-items: center;
   gap: 8px;
   color: #666;
+  width: 100%;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
-.drop-content .material-icons {
-  font-size: 32px;
+.drop-content .icon {
+  width: 48px;
+  height: 48px;
   color: #1976d2;
 }
 
@@ -238,7 +282,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 16px;
+  margin-bottom: 8px;
 }
 
 .folder-header h2 {
@@ -256,6 +300,8 @@ body {
 .file-list {
   flex: 1;
   overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-gutter: stable;
   padding: 0 16px 16px;
 }
 
@@ -263,10 +309,10 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12px 16px;
-  margin-bottom: 8px;
+  padding: 6px 12px;
+  margin-bottom: 4px;
   background: #fff;
-  border-radius: 8px;
+  border-radius: 6px;
   border: 1px solid #e0e0e0;
   transition: all 0.2s;
 }
@@ -281,20 +327,26 @@ body {
   align-items: center;
   gap: 12px;
   flex: 1;
+  min-width: 0;
 }
 
 .file-icon {
   color: #666;
-  font-size: 24px;
+  width: 24px;
+  height: 24px;
 }
 
 .file-details {
   flex: 1;
+  min-width: 0;
 }
 
 .file-name {
   font-weight: 500;
   margin-bottom: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .file-meta {
@@ -304,7 +356,8 @@ body {
 
 .encrypted-icon {
   color: #ff9800;
-  font-size: 16px;
+  width: 16px;
+  height: 16px;
 }
 
 .file-actions {
@@ -329,8 +382,9 @@ body {
   gap: 16px;
 }
 
-.empty-state .material-icons {
-  font-size: 48px;
+.empty-state .icon {
+  width: 64px;
+  height: 64px;
   color: #ccc;
 }
 
@@ -515,8 +569,13 @@ body {
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 /* Toast Notifications */
@@ -564,20 +623,29 @@ body {
 
 /* Scrollbar Styling */
 ::-webkit-scrollbar {
-  width: 6px;
+  width: 10px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #f1f1f1;
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #c1c1c1;
-  border-radius: 3px;
+  background: #d0d0d0;
+  border-radius: 10px;
+  border: 3px solid transparent;
+  background-clip: content-box;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #a1a1a1;
+  background: #b0b0b0;
+  background-clip: content-box;
+}
+
+/* Firefox scrollbar support */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #d0d0d0 transparent;
 }
 
 /* Responsive adjustments */
@@ -585,8 +653,9 @@ body {
   .drop-area {
     padding: 16px;
   }
-  
-  .drop-content .material-icons {
-    font-size: 24px;
+
+  .drop-content .icon {
+    width: 32px;
+    height: 32px;
   }
 }

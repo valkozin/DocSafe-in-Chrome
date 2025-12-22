@@ -104,12 +104,14 @@ class PopupUI {
     });
 
     // Close modals on backdrop click
-    document.querySelectorAll('.modal').forEach(modal => {
-      modal.addEventListener('click', (e) => {
-        if (e.target === modal) {
-          modal.style.display = 'none';
-        }
-      });
+    document.getElementById('passwordModal').addEventListener('click', (e) => {
+      if (e.target.id === 'passwordModal') this.hidePasswordModal();
+    });
+    document.getElementById('newFolderModal').addEventListener('click', (e) => {
+      if (e.target.id === 'newFolderModal') this.hideNewFolderModal();
+    });
+    document.getElementById('renameModal').addEventListener('click', (e) => {
+      if (e.target.id === 'renameModal') this.hideRenameModal();
     });
   }
 
