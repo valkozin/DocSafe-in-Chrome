@@ -373,6 +373,41 @@ class LocalFileVaultApp {
   }
 
   /**
+   * Rename a folder
+   */
+  async renameFolder(folderId, newName) {
+    if (folderId === 'default') {
+      throw new Error('Cannot rename the default folder');
+    }
+
+    const name = newName?.trim();
+    if (!name) {
+      throw new Error('Folder name cannot be empty');
+    }
+
+    const folders = await dbInstance.getAllFolders();
+    const folder = folders.find(f => f.id === folderId);
+    if (!folder) {
+      throw new Error('Folder not found');
+    }
+
+    // Check for duplicate name (excluding itself)
+    if (folders.some(f => f.name === name && f.id !== folderId)) {
+      throw new Error('Folder with this name already exists');
+    }
+
+    folder.name = name;
+    await dbInstance.updateFolder(folder);
+
+    // If it's the current folder, update it
+    if (this.currentFolder?.id === folderId) {
+      this.currentFolder = folder;
+    }
+
+    return folder;
+  }
+
+  /**
    * Delete a file
    */
   async deleteFile(fileId) {
@@ -467,7 +502,7 @@ class LocalFileVaultApp {
       // Fallback if estimate failed or returned 0 (unlikely with permissions)
       if (!quota) {
         // Fallback to 1 TB (functionally unlimited for this use case)
-        quota = 1024 * 1024 * 1024 * 1024; 
+        quota = 1024 * 1024 * 1024 * 1024;
         quotaFormatted = 'Unlimited';
       }
 

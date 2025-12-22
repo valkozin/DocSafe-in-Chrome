@@ -184,6 +184,9 @@ body {
 }
 
 .folder-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   padding: 6px 12px;
   cursor: pointer;
   transition: background-color 0.2s;
@@ -197,6 +200,17 @@ body {
 .folder-item.active {
   background: #e3f2fd;
   border-left-color: #1976d2;
+}
+
+.folder-actions {
+  display: flex;
+  gap: 4px;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.folder-item:hover .folder-actions {
+  opacity: 1;
 }
 
 .folder-content {

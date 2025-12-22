@@ -6,7 +6,8 @@ import app from './app.js';
 
 class PopupUI {
   constructor() {
-    this.currentFileId = null;
+    this.renameId = null;
+    this.renameType = null;
     this.pendingFolderId = null;
     this.init();
   }
@@ -144,9 +145,26 @@ class PopupUI {
         <span class="folder-name">${this.escapeHtml(folder.name)}</span>
         ${lockIconClass ? `<span class="icon ${lockIconClass} lock-icon"></span>` : ''}
       </div>
+      <div class="folder-actions">
+        ${folder.id !== 'default' ? `
+          <button class="icon-btn rename-btn" title="Rename Folder">
+            <span class="icon icon-edit"></span>
+          </button>
+        ` : ''}
+      </div>
     `;
 
     div.addEventListener('click', () => this.selectFolder(folder.id));
+
+    // Add rename listener
+    const renameBtn = div.querySelector('.rename-btn');
+    if (renameBtn) {
+      renameBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        this.showRenameModal(folder.id, folder.name, 'folder');
+      });
+    }
+
     return div;
   }
 
@@ -496,8 +514,20 @@ class PopupUI {
     }
   }
 
-  showRenameModal(fileId, currentName) {
-    this.currentFileId = fileId;
+  showRenameModal(id, currentName, type = 'file') {
+    this.renameId = id;
+    this.renameType = type;
+
+    const modalTitle = document.getElementById('renameModalTitle');
+    if (modalTitle) {
+      modalTitle.textContent = type === 'file' ? 'Rename File' : 'Rename Folder';
+    }
+
+    const inputLabel = document.querySelector('#renameModal label[for="newFilenameInput"]');
+    if (inputLabel) {
+      inputLabel.textContent = type === 'file' ? 'New Filename:' : 'New Folder Name:';
+    }
+
     document.getElementById('renameModal').style.display = 'flex';
     const input = document.getElementById('newFilenameInput');
     input.value = currentName;
@@ -509,7 +539,8 @@ class PopupUI {
   hideRenameModal() {
     document.getElementById('renameModal').style.display = 'none';
     document.getElementById('newFilenameInput').value = '';
-    this.currentFileId = null;
+    this.renameId = null;
+    this.renameType = null;
   }
 
   async handleRename() {
@@ -517,15 +548,27 @@ class PopupUI {
     const errorDiv = document.getElementById('renameError');
 
     if (!newName) {
-      errorDiv.textContent = 'Please enter a filename';
+      errorDiv.textContent = this.renameType === 'file' ? 'Please enter a filename' : 'Please enter a folder name';
       return;
     }
 
     try {
-      await app.renameFile(this.currentFileId, newName);
+      if (this.renameType === 'file') {
+        await app.renameFile(this.renameId, newName);
+      } else {
+        await app.renameFolder(this.renameId, newName);
+      }
+
       this.hideRenameModal();
-      await this.loadFiles();
-      this.showToast('File renamed successfully', 'success');
+
+      if (this.renameType === 'file') {
+        await this.loadFiles();
+        this.showToast('File renamed successfully', 'success');
+      } else {
+        await this.loadFolders();
+        this.updateCurrentFolderDisplay(app.currentFolder);
+        this.showToast('Folder renamed successfully', 'success');
+      }
     } catch (error) {
       errorDiv.textContent = error.message;
     }

@@ -143,6 +143,45 @@ describe('DocSafe Application', () => {
       expect(result).toBe(mockFolders);
       expect(dbInstance.getAllFolders).toHaveBeenCalled();
     });
+
+    test('renameFolder should update folder name', async () => {
+      const folderId = 'folder1';
+      const oldName = 'Old Folder';
+      const newName = 'New Folder';
+      const mockFolders = [{ id: folderId, name: oldName }];
+
+      dbInstance.getAllFolders.mockResolvedValue(mockFolders);
+      dbInstance.updateFolder.mockResolvedValue();
+
+      const result = await app.renameFolder(folderId, newName);
+
+      expect(result.name).toBe(newName);
+      expect(dbInstance.updateFolder).toHaveBeenCalledWith(expect.objectContaining({
+        id: folderId,
+        name: newName
+      }));
+    });
+
+    test('renameFolder should reject renaming default folder', async () => {
+      await expect(app.renameFolder('default', 'New Name')).rejects.toThrow('Cannot rename the default folder');
+    });
+
+    test('renameFolder should reject empty name', async () => {
+      await expect(app.renameFolder('folder1', '')).rejects.toThrow('Folder name cannot be empty');
+      await expect(app.renameFolder('folder1', '   ')).rejects.toThrow('Folder name cannot be empty');
+    });
+
+    test('renameFolder should reject duplicate name', async () => {
+      const folderId = 'folder1';
+      const mockFolders = [
+        { id: folderId, name: 'Folder 1' },
+        { id: 'folder2', name: 'Folder 2' }
+      ];
+
+      dbInstance.getAllFolders.mockResolvedValue(mockFolders);
+
+      await expect(app.renameFolder(folderId, 'Folder 2')).rejects.toThrow('Folder with this name already exists');
+    });
   });
 
   describe('Folder Unlocking', () => {
