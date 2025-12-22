@@ -89,13 +89,6 @@ class LocalFileVaultApp {
       createdAt: new Date().toISOString()
     };
 
-    if (folder.isProtected) {
-      // Check limit for protected folders
-      const protectedCount = folders.filter(f => f.isProtected).length;
-      if (protectedCount >= 5) {
-        throw new Error('LIMIT_REACHED_PROTECTED_FOLDERS');
-      }
-    }
 
     if (password) {
       const salt = generateSalt();

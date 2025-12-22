@@ -516,12 +516,7 @@ class PopupUI {
       await this.loadFolders();
       this.showToast('Folder created successfully', 'success');
     } catch (error) {
-      if (error.message && error.message.includes('LIMIT_REACHED_PROTECTED_FOLDERS')) {
-        this.showToast('Protected folder limit reached (Max 5)', 'warning');
-        this.hideNewFolderModal();
-      } else {
-        this.showToast(error.message, 'error');
-      }
+      this.showToast(error.message, 'error');
     }
   }
 
