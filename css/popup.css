@@ -8,10 +8,10 @@
 
 html,
 body {
-  width: 500px !important;
-  height: 400px !important;
-  max-width: 500px !important;
-  max-height: 400px !important;
+  width: 600px !important;
+  height: 550px !important;
+  max-width: 600px !important;
+  max-height: 550px !important;
   overflow: hidden !important;
 }
 
@@ -27,10 +27,10 @@ body {
 .app-container {
   display: flex;
   flex-direction: column;
-  width: 500px !important;
-  height: 400px !important;
-  max-width: 500px !important;
-  max-height: 400px !important;
+  width: 600px !important;
+  height: 550px !important;
+  max-width: 600px !important;
+  max-height: 550px !important;
   overflow: hidden !important;
 }
 
@@ -152,7 +152,7 @@ body {
 
 /* Sidebar */
 .sidebar {
-  width: 160px !important;
+  width: 180px !important;
   flex-shrink: 0;
   background: #fff;
   border-right: 1px solid #e0e0e0;
@@ -259,7 +259,7 @@ body {
   text-align: center;
   cursor: pointer;
   transition: all 0.2s;
-  width: 300px !important;
+  width: 350px !important;
   max-width: 90%;
   flex-shrink: 0;
 }
