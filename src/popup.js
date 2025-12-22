@@ -150,18 +150,29 @@ class PopupUI {
           <button class="icon-btn rename-btn" title="Rename Folder">
             <span class="icon icon-edit"></span>
           </button>
+          <button class="icon-btn delete-btn" title="Delete Folder">
+            <span class="icon icon-delete"></span>
+          </button>
         ` : ''}
       </div>
     `;
 
     div.addEventListener('click', () => this.selectFolder(folder.id));
 
-    // Add rename listener
+    // Add action listeners
     const renameBtn = div.querySelector('.rename-btn');
     if (renameBtn) {
       renameBtn.addEventListener('click', (e) => {
         e.stopPropagation();
         this.showRenameModal(folder.id, folder.name, 'folder');
+      });
+    }
+
+    const deleteBtn = div.querySelector('.delete-btn');
+    if (deleteBtn) {
+      deleteBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        this.deleteFolder(folder.id, folder.name);
       });
     }
 
@@ -553,7 +564,9 @@ class PopupUI {
     }
 
     try {
-      if (this.renameType === 'file') {
+      const type = this.renameType; // Store type before hiding modal clears it
+
+      if (type === 'file') {
         await app.renameFile(this.renameId, newName);
       } else {
         await app.renameFolder(this.renameId, newName);
@@ -561,7 +574,7 @@ class PopupUI {
 
       this.hideRenameModal();
 
-      if (this.renameType === 'file') {
+      if (type === 'file') {
         await this.loadFiles();
         this.showToast('File renamed successfully', 'success');
       } else {
@@ -574,23 +587,30 @@ class PopupUI {
     }
   }
 
-  async deleteCurrentFolder() {
-    if (!app.currentFolder) return;
-
-    const folderName = app.currentFolder.name;
-    if (!confirm(`Are you sure you want to delete the folder "${folderName}" and all its files?`)) {
+  async deleteFolder(id, name) {
+    if (!confirm(`Are you sure you want to delete the folder "${name}" and all its files?`)) {
       return;
     }
 
     try {
-      await app.deleteFolder(app.currentFolder.id);
+      await app.deleteFolder(id);
       await this.loadFolders();
-      await this.selectDefaultFolder();
+
+      // If we deleted the current folder, go back to default
+      if (app.currentFolder?.id === id) {
+        await this.selectDefaultFolder();
+      }
+
       await this.updateStorageIndicator();
       this.showToast('Folder deleted successfully', 'success');
     } catch (error) {
       this.showToast('Delete failed: ' + error.message, 'error');
     }
+  }
+
+  async deleteCurrentFolder() {
+    if (!app.currentFolder) return;
+    await this.deleteFolder(app.currentFolder.id, app.currentFolder.name);
   }
 
   lockAllFolders() {

@@ -151,7 +151,12 @@ describe('DocSafe Database', () => {
 
       mockStore.add.mockReturnValue(mockRequest);
 
-      dbInstance.addFile(testFile);
+      const addPromise = dbInstance.addFile(testFile);
+
+      // Simulate successful transaction
+      setTimeout(() => mockTransaction.oncomplete(), 0);
+
+      await addPromise;
 
       expect(mockDB.transaction).toHaveBeenCalledWith(['files'], 'readwrite');
       expect(mockTransaction.objectStore).toHaveBeenCalledWith('files');
@@ -185,7 +190,12 @@ describe('DocSafe Database', () => {
 
       mockStore.put.mockReturnValue(mockRequest);
 
-      dbInstance.updateFile(testFile);
+      const updatePromise = dbInstance.updateFile(testFile);
+
+      // Simulate successful transaction
+      setTimeout(() => mockTransaction.oncomplete(), 0);
+
+      await updatePromise;
 
       expect(mockDB.transaction).toHaveBeenCalledWith(['files'], 'readwrite');
       expect(mockStore.put).toHaveBeenCalledWith(testFile);
@@ -196,7 +206,12 @@ describe('DocSafe Database', () => {
 
       mockStore.delete.mockReturnValue(mockRequest);
 
-      dbInstance.deleteFile(fileId);
+      const deletePromise = dbInstance.deleteFile(fileId);
+
+      // Simulate successful transaction
+      setTimeout(() => mockTransaction.oncomplete(), 0);
+
+      await deletePromise;
 
       expect(mockDB.transaction).toHaveBeenCalledWith(['files'], 'readwrite');
       expect(mockStore.delete).toHaveBeenCalledWith(fileId);
@@ -239,7 +254,12 @@ describe('DocSafe Database', () => {
 
       mockStore.add.mockReturnValue(mockRequest);
 
-      dbInstance.addFolder(testFolder);
+      const addPromise = dbInstance.addFolder(testFolder);
+
+      // Simulate successful transaction
+      setTimeout(() => mockTransaction.oncomplete(), 0);
+
+      await addPromise;
 
       expect(mockDB.transaction).toHaveBeenCalledWith(['folders'], 'readwrite');
       expect(mockStore.add).toHaveBeenCalledWith(testFolder);
@@ -292,7 +312,12 @@ describe('DocSafe Database', () => {
 
       mockStore.put.mockReturnValue(mockRequest);
 
-      dbInstance.updateFolder(testFolder);
+      const updatePromise = dbInstance.updateFolder(testFolder);
+
+      // Simulate successful transaction
+      setTimeout(() => mockTransaction.oncomplete(), 0);
+
+      await updatePromise;
 
       expect(mockDB.transaction).toHaveBeenCalledWith(['folders'], 'readwrite');
       expect(mockStore.put).toHaveBeenCalledWith(testFolder);
@@ -303,7 +328,12 @@ describe('DocSafe Database', () => {
 
       mockStore.delete.mockReturnValue(mockRequest);
 
-      dbInstance.deleteFolder(folderId);
+      const deletePromise = dbInstance.deleteFolder(folderId);
+
+      // Simulate successful transaction
+      setTimeout(() => mockTransaction.oncomplete(), 0);
+
+      await deletePromise;
 
       expect(mockDB.transaction).toHaveBeenCalledWith(['folders'], 'readwrite');
       expect(mockStore.delete).toHaveBeenCalledWith(folderId);
@@ -321,7 +351,12 @@ describe('DocSafe Database', () => {
 
       mockStore.put.mockReturnValue(mockRequest);
 
-      dbInstance.setMetadata(key, value);
+      const setPromise = dbInstance.setMetadata(key, value);
+
+      // Simulate successful transaction
+      setTimeout(() => mockTransaction.oncomplete(), 0);
+
+      await setPromise;
 
       expect(mockDB.transaction).toHaveBeenCalledWith(['metadata'], 'readwrite');
       expect(mockStore.put).toHaveBeenCalledWith({ key, value });
@@ -366,18 +401,28 @@ describe('DocSafe Database', () => {
     });
 
     test('clearAll should clear all object stores', async () => {
-      const mockClearPromises = [
-        Promise.resolve(),
-        Promise.resolve(),
-        Promise.resolve()
+      // Use unique mock requests for each call to avoid overwriting onsuccess handlers
+      const mockRequests = [
+        { onsuccess: null, onerror: null, result: null },
+        { onsuccess: null, onerror: null, result: null },
+        { onsuccess: null, onerror: null, result: null },
+        { onsuccess: null, onerror: null, result: null }
       ];
 
       mockStore.clear
-        .mockReturnValueOnce(mockClearPromises[0])
-        .mockReturnValueOnce(mockClearPromises[1])
-        .mockReturnValueOnce(mockClearPromises[2]);
+        .mockReturnValueOnce(mockRequests[0])
+        .mockReturnValueOnce(mockRequests[1])
+        .mockReturnValueOnce(mockRequests[2])
+        .mockReturnValueOnce(mockRequests[3]);
 
-      await dbInstance.clearAll();
+      const clearPromise = dbInstance.clearAll();
+
+      // Trigger oncomplete for the transaction
+      setTimeout(() => {
+        mockTransaction.oncomplete();
+      }, 0);
+
+      await clearPromise;
 
       expect(mockDB.transaction).toHaveBeenCalledWith(['files', 'folders', 'metadata', 'file_chunks'], 'readwrite');
       expect(mockStore.clear).toHaveBeenCalledTimes(4);

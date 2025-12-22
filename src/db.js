@@ -18,6 +18,27 @@ class LocalFileVaultDB {
     this.db = null;
   }
 
+  /**
+   * Helper to wrap IDBRequest in a Promise
+   */
+  promisifyRequest(request) {
+    return new Promise((resolve, reject) => {
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = () => reject(request.error || new Error('Request failed'));
+    });
+  }
+
+  /**
+   * Helper to wait for transaction completion
+   */
+  async awaitTransaction(transaction) {
+    return new Promise((resolve, reject) => {
+      transaction.oncomplete = () => resolve();
+      transaction.onerror = () => reject(transaction.error || new Error('Transaction failed'));
+      transaction.onabort = () => reject(new Error('Transaction aborted'));
+    });
+  }
+
   async init() {
     return new Promise((resolve, reject) => {
       const request = indexedDB.open(DB_NAME, DB_VERSION);
@@ -61,7 +82,9 @@ class LocalFileVaultDB {
   async addFile(file) {
     const transaction = this.db.transaction([STORES.FILES], 'readwrite');
     const store = transaction.objectStore(STORES.FILES);
-    return store.add(file);
+    const request = store.add(file);
+    await this.awaitTransaction(transaction);
+    return request.result;
   }
 
   async getFile(id) {
@@ -81,13 +104,16 @@ class LocalFileVaultDB {
   async updateFile(file) {
     const transaction = this.db.transaction([STORES.FILES], 'readwrite');
     const store = transaction.objectStore(STORES.FILES);
-    return store.put(file);
+    const request = store.put(file);
+    await this.awaitTransaction(transaction);
+    return request.result;
   }
 
   async deleteFile(id) {
     const transaction = this.db.transaction([STORES.FILES], 'readwrite');
     const store = transaction.objectStore(STORES.FILES);
-    return store.delete(id);
+    store.delete(id);
+    return this.awaitTransaction(transaction);
   }
 
   async getFilesByFolder(folderId) {
@@ -105,7 +131,9 @@ class LocalFileVaultDB {
   async addFolder(folder) {
     const transaction = this.db.transaction([STORES.FOLDERS], 'readwrite');
     const store = transaction.objectStore(STORES.FOLDERS);
-    return store.add(folder);
+    const request = store.add(folder);
+    await this.awaitTransaction(transaction);
+    return request.result;
   }
 
   async getFolder(id) {
@@ -125,13 +153,16 @@ class LocalFileVaultDB {
   async updateFolder(folder) {
     const transaction = this.db.transaction([STORES.FOLDERS], 'readwrite');
     const store = transaction.objectStore(STORES.FOLDERS);
-    return store.put(folder);
+    const request = store.put(folder);
+    await this.awaitTransaction(transaction);
+    return request.result;
   }
 
   async deleteFolder(id) {
     const transaction = this.db.transaction([STORES.FOLDERS], 'readwrite');
     const store = transaction.objectStore(STORES.FOLDERS);
-    return store.delete(id);
+    store.delete(id);
+    return this.awaitTransaction(transaction);
   }
 
   async getAllFolders() {
@@ -148,13 +179,15 @@ class LocalFileVaultDB {
   async setMetadata(key, value) {
     const transaction = this.db.transaction([STORES.METADATA], 'readwrite');
     const store = transaction.objectStore(STORES.METADATA);
-    return store.put({ key, value });
+    store.put({ key, value });
+    return this.awaitTransaction(transaction);
   }
 
   async addFileChunk(chunk) {
     const transaction = this.db.transaction([STORES.FILE_CHUNKS], 'readwrite');
     const store = transaction.objectStore(STORES.FILE_CHUNKS);
-    return store.put(chunk);
+    store.put(chunk);
+    return this.awaitTransaction(transaction);
   }
 
   async getFileChunks(fileId) {
@@ -208,12 +241,12 @@ class LocalFileVaultDB {
   async clearAll() {
     const transaction = this.db.transaction([STORES.FILES, STORES.FOLDERS, STORES.METADATA, STORES.FILE_CHUNKS], 'readwrite');
 
-    await Promise.all([
-      transaction.objectStore(STORES.FILES).clear(),
-      transaction.objectStore(STORES.FOLDERS).clear(),
-      transaction.objectStore(STORES.METADATA).clear(),
-      transaction.objectStore(STORES.FILE_CHUNKS).clear()
-    ]);
+    transaction.objectStore(STORES.FILES).clear();
+    transaction.objectStore(STORES.FOLDERS).clear();
+    transaction.objectStore(STORES.METADATA).clear();
+    transaction.objectStore(STORES.FILE_CHUNKS).clear();
+
+    return this.awaitTransaction(transaction);
   }
 
   async close() {

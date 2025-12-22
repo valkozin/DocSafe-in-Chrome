@@ -82,7 +82,7 @@ global.FileReader = dom.window.FileReader;
 global.URL = dom.window.URL;
 
 describe('DocSafe Integration Tests', () => {
-  let mockDB, mockTransaction, mockStore, mockRequest;
+  let mockDB, mockTransaction, mockStore, mockRequest, mockOpenRequest;
 
   beforeEach(() => {
     jest.resetModules(); // Ensure fresh app/db instances for each test
@@ -124,27 +124,63 @@ describe('DocSafe Integration Tests', () => {
       createObjectStore: jest.fn().mockReturnValue(mockStore)
     };
 
-    const mockOpenRequest = {
+    mockOpenRequest = {
       onsuccess: null,
       onerror: null,
       onupgradeneeded: null,
       result: mockDB
     };
 
-    global.indexedDB.open.mockImplementation(() => {
+    const setupMockRequest = (mockReq, result) => {
+      mockReq.onsuccess = null;
+      mockReq.onerror = null;
+      mockReq.result = result;
+      // For read requests, we still need to trigger onsuccess
       setTimeout(() => {
-        const event = { target: { result: mockDB } };
-        if (mockOpenRequest.onsuccess) mockOpenRequest.onsuccess(event);
-        // For other requests (add, put, etc), result is usually the key or undefined, depending on op.
-        // We set mockRequest.result in tests.
-        const reqEvent = { target: { result: mockRequest.result } };
-        if (mockRequest.onsuccess) mockRequest.onsuccess(reqEvent);
+        if (mockReq.onsuccess) mockReq.onsuccess({ target: { result } });
       }, 0);
-      return mockOpenRequest;
+      return mockReq;
+    };
+
+    const setupWriteOperation = (transaction) => {
+      setTimeout(() => {
+        if (transaction.oncomplete) transaction.oncomplete();
+      }, 0);
+    };
+
+    global.indexedDB.open.mockImplementation(() => {
+      const openReq = { ...mockOpenRequest };
+      setTimeout(() => {
+        if (openReq.onsuccess) openReq.onsuccess({ target: { result: mockDB } });
+      }, 0);
+      return openReq;
     });
+
+    // Update store methods
+    mockStore.add.mockImplementation((data) => {
+      setupWriteOperation(mockTransaction);
+      return { onsuccess: null, onerror: null, result: data.id || 'new-id' };
+    });
+    mockStore.put.mockImplementation((data) => {
+      setupWriteOperation(mockTransaction);
+      return { onsuccess: null, onerror: null, result: data.id || data.key || 'updated-id' };
+    });
+    mockStore.get.mockImplementation((id) => setupMockRequest({ ...mockRequest }, mockRequest.result));
+    mockStore.delete.mockImplementation(() => {
+      setupWriteOperation(mockTransaction);
+      return { onsuccess: null, onerror: null, result: undefined };
+    });
+    mockStore.getAll.mockImplementation(() => setupMockRequest({ ...mockRequest }, mockRequest.result || []));
+    mockStore.clear.mockImplementation(() => {
+      setupWriteOperation(mockTransaction);
+      return { onsuccess: null, onerror: null, result: undefined };
+    });
+    mockStore.index.mockImplementation(() => ({
+      getAll: jest.fn().mockImplementation(() => setupMockRequest({ ...mockRequest }, mockRequest.result || []))
+    }));
   });
 
-  describe.skip('File Upload Workflow', () => {
+  describe('File Upload Workflow', () => {
     test('should upload file to unprotected folder', async () => {
       // Load the popup HTML structure
       document.body.innerHTML = `
@@ -162,10 +198,7 @@ describe('DocSafe Integration Tests', () => {
 
       // Mock successful database operations
       mockRequest.result = { id: 'default', name: 'General', isProtected: false };
-      mockStore.add.mockImplementation(() => {
-        setTimeout(() => mockRequest.onsuccess && mockRequest.onsuccess({ target: { result: 'default' } }), 0);
-        return mockRequest;
-      });
+      // No need to manually mock here as we have global implementation
 
       // Dynamically import and initialize the app
       const { default: app } = await import('../src/app.js');
@@ -224,7 +257,7 @@ describe('DocSafe Integration Tests', () => {
     });
   });
 
-  describe.skip('Folder Management Workflow', () => {
+  describe('Folder Management Workflow', () => {
     test('should create unprotected folder', async () => {
       mockRequest.result = [];
       mockStore.getAll.mockImplementation(() => {
@@ -236,6 +269,8 @@ describe('DocSafe Integration Tests', () => {
       });
 
       const { default: app } = await import('../src/app.js');
+      // Set result for getAllFolders called in app.init() or shortly after
+      mockRequest.result = [];
       await app.init();
 
       const folderName = 'My Documents';
@@ -276,7 +311,7 @@ describe('DocSafe Integration Tests', () => {
     });
   });
 
-  describe.skip('Password Authentication Workflow', () => {
+  describe('Password Authentication Workflow', () => {
     test('should unlock protected folder with correct password', async () => {
       const folder = {
         id: 'protected-folder',
@@ -331,7 +366,7 @@ describe('DocSafe Integration Tests', () => {
     });
   });
 
-  describe.skip('File Download Workflow', () => {
+  describe('File Download Workflow', () => {
     test('should download and decrypt encrypted file', async () => {
       const originalContent = 'Secret file content';
       const fileData = {
@@ -385,7 +420,7 @@ describe('DocSafe Integration Tests', () => {
     });
   });
 
-  describe.skip('Drag and Drop Integration', () => {
+  describe('Drag and Drop Integration', () => {
     test('should handle drag and drop file upload', async () => {
       // Setup DOM for drag and drop
       document.body.innerHTML = `
@@ -421,7 +456,7 @@ describe('DocSafe Integration Tests', () => {
     });
   });
 
-  describe.skip('Storage Statistics', () => {
+  describe('Storage Statistics', () => {
     test('should calculate correct storage statistics', async () => {
       const mockFolders = [
         { id: 'folder1', isProtected: false },
@@ -464,7 +499,7 @@ describe('DocSafe Integration Tests', () => {
     });
   });
 
-  describe.skip('Vault Reset', () => {
+  describe('Vault Reset', () => {
     test('should reset entire vault', async () => {
       const { default: app } = await import('../src/app.js');
       await app.init();
@@ -474,8 +509,7 @@ describe('DocSafe Integration Tests', () => {
       app.sessionPasswords.set('folder1', 'password');
       app.currentFolder = { id: 'folder1' };
 
-      // Mock database clear
-      mockStore.clear.mockResolvedValue();
+      // Mock database clear behavior is already handled by our new setupMockRequest in beforeEach
 
       await app.resetVault();
 
@@ -485,7 +519,7 @@ describe('DocSafe Integration Tests', () => {
     });
   });
 
-  describe.skip('Error Scenarios', () => {
+  describe('Error Scenarios', () => {
     test('should handle database connection errors', async () => {
       const mockOpenRequest = {
         onsuccess: null,

@@ -9,9 +9,9 @@
 html,
 body {
   width: 600px !important;
-  height: 550px !important;
+  height: 530px !important;
   max-width: 600px !important;
-  max-height: 550px !important;
+  max-height: 530px !important;
   overflow: hidden !important;
 }
 
@@ -28,9 +28,9 @@ body {
   display: flex;
   flex-direction: column;
   width: 600px !important;
-  height: 550px !important;
+  height: 530px !important;
   max-width: 600px !important;
-  max-height: 550px !important;
+  max-height: 530px !important;
   overflow: hidden !important;
 }
 
@@ -152,7 +152,7 @@ body {
 
 /* Sidebar */
 .sidebar {
-  width: 180px !important;
+  width: 220px !important;
   flex-shrink: 0;
   background: #fff;
   border-right: 1px solid #e0e0e0;
