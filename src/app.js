@@ -454,12 +454,23 @@ class LocalFileVaultApp {
   async getStorageUsage() {
     try {
       const stats = await this.getStorageStats();
-      // Enforce 30MB limit
-      const ONE_MB = 1024 * 1024;
-      const quota = 30 * ONE_MB;
+      let quota = 0;
+      let quotaFormatted = 'Unknown';
 
-      // Force display 30MB as quota, and use actual file size sum for usage
-      // This ensures consistency with the Settings page
+      // Try to get actual quota from browser
+      if (navigator.storage && navigator.storage.estimate) {
+        const estimate = await navigator.storage.estimate();
+        quota = estimate.quota;
+        quotaFormatted = this.formatBytes(quota);
+      }
+
+      // Fallback if estimate failed or returned 0 (unlikely with permissions)
+      if (!quota) {
+        // Fallback to 1 TB (functionally unlimited for this use case)
+        quota = 1024 * 1024 * 1024 * 1024; 
+        quotaFormatted = 'Unlimited';
+      }
+
       const usagePercentage = (stats.totalSize / quota) * 100;
 
       return {
@@ -467,10 +478,11 @@ class LocalFileVaultApp {
         quota: quota,
         usagePercentage: usagePercentage,
         usageFormatted: this.formatBytes(stats.totalSize),
-        quotaFormatted: '30 MB', // Explicitly display 30 MB
+        quotaFormatted: quotaFormatted,
         fallback: false
       };
     } catch (_error) {
+      console.error('Failed to get storage usage:', _error);
       return {
         usage: 0,
         quota: 1,

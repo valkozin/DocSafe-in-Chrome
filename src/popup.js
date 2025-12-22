@@ -316,7 +316,7 @@ class PopupUI {
     } catch (error) {
       this.hideProgress();
       if (error.message && error.message.includes('LIMIT_REACHED_STORAGE')) {
-        this.showToast('Storage limit reached (Paid Plan - To be added soon)', 'warning');
+        this.showToast('Storage limit reached! Please free up system space.', 'warning');
       } else {
         this.showToast('Upload failed: ' + error.message, 'error');
       }
@@ -486,7 +486,7 @@ class PopupUI {
       this.showToast('Folder created successfully', 'success');
     } catch (error) {
       if (error.message && error.message.includes('LIMIT_REACHED_PROTECTED_FOLDERS')) {
-        this.showToast('Protected folder limit reached (Paid Plan - To be added soon)', 'warning');
+        this.showToast('Protected folder limit reached (Max 5)', 'warning');
         this.hideNewFolderModal();
       } else {
         this.showToast(error.message, 'error');
