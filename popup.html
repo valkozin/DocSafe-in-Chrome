@@ -69,6 +69,15 @@
           <div class="folder-header">
             <h2 id="currentFolderName">Select a folder</h2>
             <div class="folder-actions">
+              <!-- Actions for current folder -->
+              <button id="headerChangePasswordBtn" class="icon-btn change-password-btn" title="Change Password"
+                style="display: none;">
+                <span class="icon icon-key"></span>
+              </button>
+              <button id="headerRenameFolderBtn" class="icon-btn rename-btn" title="Rename Folder"
+                style="display: none;">
+                <span class="icon icon-edit"></span>
+              </button>
               <button id="deleteFolderBtn" class="icon-btn delete-btn" title="Delete Folder" style="display: none;">
                 <span class="icon icon-delete"></span>
               </button>
@@ -172,6 +181,42 @@
       <div class="modal-footer">
         <button id="cancelRenameBtn" class="btn btn-secondary">Cancel</button>
         <button id="confirmRenameBtn" class="btn btn-primary">Rename</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Change Password Modal -->
+  <div id="changePasswordModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Change Folder Password</h3>
+        <button id="closeChangePasswordModal" class="icon-btn">
+          <span class="icon icon-close"></span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="alert alert-warning"
+          style="background-color: #fff3cd; color: #856404; padding: 10px; border-radius: 4px; margin-bottom: 15px; border: 1px solid #ffeeba; display: flex; align-items: center; gap: 8px;">
+          <span class="icon icon-warning" style="color: #856404;"></span>
+          Do not close the extension while processing!
+        </div>
+        <div class="input-group">
+          <label for="oldPasswordInput">Current Password:</label>
+          <input type="password" id="oldPasswordInput" class="input" placeholder="Enter current password">
+        </div>
+        <div class="input-group">
+          <label for="newChangePasswordInput">New Password:</label>
+          <input type="password" id="newChangePasswordInput" class="input" placeholder="Enter new password">
+        </div>
+        <div class="input-group">
+          <label for="confirmChangePasswordInput">Confirm New Password:</label>
+          <input type="password" id="confirmChangePasswordInput" class="input" placeholder="Confirm new password">
+        </div>
+        <div id="changePasswordError" class="error-message"></div>
+      </div>
+      <div class="modal-footer">
+        <button id="cancelChangePasswordBtn" class="btn btn-secondary">Cancel</button>
+        <button id="confirmChangePasswordBtn" class="btn btn-primary">Change Password</button>
       </div>
     </div>
   </div>

@@ -8,7 +8,9 @@ class PopupUI {
   constructor() {
     this.renameId = null;
     this.renameType = null;
+    this.renameType = null;
     this.pendingFolderId = null;
+    this.changePasswordFolderId = null;
     this.init();
   }
 
@@ -52,9 +54,23 @@ class PopupUI {
     dropArea.addEventListener('dragenter', (e) => this.handleDragEnter(e));
     dropArea.addEventListener('dragleave', (e) => this.handleDragLeave(e));
 
-    // Folder deletion
+    // Folder deletion (Header Action)
     document.getElementById('deleteFolderBtn').addEventListener('click', () => {
       this.deleteCurrentFolder();
+    });
+
+    // Rename Folder (Header Action)
+    document.getElementById('headerRenameFolderBtn').addEventListener('click', () => {
+      if (app.currentFolder) {
+        this.showRenameModal(app.currentFolder.id, app.currentFolder.name, 'folder');
+      }
+    });
+
+    // Change Password (Header Action)
+    document.getElementById('headerChangePasswordBtn').addEventListener('click', () => {
+      if (app.currentFolder) {
+        this.showChangePasswordModal(app.currentFolder.id);
+      }
     });
 
     // Password modal
@@ -114,6 +130,20 @@ class PopupUI {
     document.getElementById('renameModal').addEventListener('click', (e) => {
       if (e.target.id === 'renameModal') this.hideRenameModal();
     });
+
+    // Change Password modal
+    document.getElementById('closeChangePasswordModal').addEventListener('click', () => {
+      this.hideChangePasswordModal();
+    });
+    document.getElementById('cancelChangePasswordBtn').addEventListener('click', () => {
+      this.hideChangePasswordModal();
+    });
+    document.getElementById('confirmChangePasswordBtn').addEventListener('click', () => {
+      this.handleChangePassword();
+    });
+    document.getElementById('changePasswordModal').addEventListener('click', (e) => {
+      if (e.target.id === 'changePasswordModal') this.hideChangePasswordModal();
+    });
   }
 
   async loadFolders() {
@@ -146,35 +176,14 @@ class PopupUI {
         ${lockIconClass ? `<span class="icon ${lockIconClass} lock-icon"></span>` : ''}
       </div>
       <div class="folder-actions">
-        ${folder.id !== 'default' ? `
-          <button class="icon-btn rename-btn" title="Rename Folder">
-            <span class="icon icon-edit"></span>
-          </button>
-          <button class="icon-btn delete-btn" title="Delete Folder">
-            <span class="icon icon-delete"></span>
-          </button>
-        ` : ''}
+        <!-- Actions moved to header for cleaner UI -->
       </div>
     `;
 
     div.addEventListener('click', () => this.selectFolder(folder.id));
 
-    // Add action listeners
-    const renameBtn = div.querySelector('.rename-btn');
-    if (renameBtn) {
-      renameBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        this.showRenameModal(folder.id, folder.name, 'folder');
-      });
-    }
-
-    const deleteBtn = div.querySelector('.delete-btn');
-    if (deleteBtn) {
-      deleteBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        this.deleteFolder(folder.id, folder.name);
-      });
-    }
+    // Removed individual folder event listeners for buttons
+    // Selection listener remains on the div
 
     return div;
   }
@@ -209,7 +218,20 @@ class PopupUI {
   updateCurrentFolderDisplay(folder) {
     document.getElementById('currentFolderName').textContent = folder.name;
     const deleteBtn = document.getElementById('deleteFolderBtn');
-    deleteBtn.style.display = folder.id === 'default' ? 'none' : 'block';
+    const renameBtn = document.getElementById('headerRenameFolderBtn');
+    const changePwBtn = document.getElementById('headerChangePasswordBtn');
+
+    // Default folder cannot be modified
+    if (folder.id === 'default') {
+      deleteBtn.style.display = 'none';
+      renameBtn.style.display = 'none';
+      changePwBtn.style.display = 'none';
+    } else {
+      deleteBtn.style.display = 'block';
+      renameBtn.style.display = 'block';
+      // Only show change password if protected
+      changePwBtn.style.display = folder.isProtected ? 'block' : 'none';
+    }
   }
 
   updateFolderSelection(folderId) {
@@ -606,6 +628,63 @@ class PopupUI {
   async deleteCurrentFolder() {
     if (!app.currentFolder) return;
     await this.deleteFolder(app.currentFolder.id, app.currentFolder.name);
+  }
+
+  showChangePasswordModal(folderId) {
+    this.changePasswordFolderId = folderId;
+    document.getElementById('changePasswordModal').style.display = 'flex';
+    document.getElementById('oldPasswordInput').value = '';
+    document.getElementById('newChangePasswordInput').value = '';
+    document.getElementById('confirmChangePasswordInput').value = '';
+    document.getElementById('changePasswordError').textContent = '';
+    document.getElementById('oldPasswordInput').focus();
+  }
+
+  hideChangePasswordModal() {
+    document.getElementById('changePasswordModal').style.display = 'none';
+    this.changePasswordFolderId = null;
+  }
+
+  async handleChangePassword() {
+    const oldPassword = document.getElementById('oldPasswordInput').value;
+    const newPassword = document.getElementById('newChangePasswordInput').value;
+    const confirmPassword = document.getElementById('confirmChangePasswordInput').value;
+    const errorDiv = document.getElementById('changePasswordError');
+    const folderId = this.changePasswordFolderId;
+
+    if (!oldPassword) {
+      errorDiv.textContent = 'Please enter current password';
+      return;
+    }
+    if (!newPassword) {
+      errorDiv.textContent = 'Please enter new password';
+      return;
+    }
+    if (newPassword.length < 8) {
+      errorDiv.textContent = 'New password must be at least 8 characters';
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      errorDiv.textContent = 'New passwords do not match';
+      return;
+    }
+
+    try {
+      this.hideChangePasswordModal();
+      this.showProgress('Preparing to re-encrypt files...');
+
+      await app.changeFolderPassword(folderId, oldPassword, newPassword, (status) => {
+        this.showProgress(status);
+      });
+
+      this.showToast('Password changed successfully', 'success');
+    } catch (error) {
+      this.showToast('Failed to change password: ' + error.message, 'error');
+      // If failed, we might want to re-show the modal so they can retry or see what happened
+      // But the error is shown in toast.
+    } finally {
+      this.hideProgress();
+    }
   }
 
   lockAllFolders() {

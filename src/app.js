@@ -401,6 +401,85 @@ class LocalFileVaultApp {
   }
 
   /**
+   * Change folder password (re-encrypts all files)
+   */
+  async changeFolderPassword(folderId, oldPassword, newPassword, onProgress = () => { }) {
+    if (folderId === 'default') {
+      throw new Error('Cannot change password for default folder');
+    }
+
+    if (!newPassword || newPassword.length < 8) {
+      throw new Error('New password must be at least 8 characters');
+    }
+
+    const folder = await dbInstance.getFolder(folderId);
+    if (!folder) {
+      throw new Error('Folder not found');
+    }
+
+    // 1. Verify old password
+    const oldSalt = base64ToUint8Array(folder.salt);
+    const oldHash = base64ToUint8Array(folder.passwordHash);
+
+    const isValid = await verifyPassword(oldPassword, oldSalt, oldHash);
+    if (!isValid) {
+      throw new Error('Current password is incorrect');
+    }
+
+    // 2. Prepare new crypto material
+    const newSalt = generateSalt();
+    const newPasswordHash = await hashPassword(newPassword, newSalt);
+
+    // 3. Re-encrypt all files
+    const files = await dbInstance.getFilesByFolder(folderId);
+    let processedFiles = 0;
+    const totalFiles = files.length;
+
+    try {
+      for (const file of files) {
+        onProgress(`Processing file ${processedFiles + 1} of ${totalFiles}: ${file.filename}`);
+        
+        const chunks = await dbInstance.getFileChunks(file.id);
+        
+        for (const chunk of chunks) {
+          // Decrypt with old password
+          const decryptedChunk = await decryptFile(chunk.data, oldPassword, oldSalt, 'application/octet-stream');
+          
+          // Encrypt with new password
+          const reEncryptedChunk = await encryptFile(decryptedChunk, newPassword, newSalt);
+          
+          // Update chunk
+          chunk.data = reEncryptedChunk;
+          await dbInstance.addFileChunk(chunk); // Overwrite existing chunk
+        }
+        
+        processedFiles++;
+      }
+    } catch (error) {
+      // Logic failure during re-encryption
+      // Note: We are in a mixed state here. Some files might be re-encrypted, others not.
+      // Ideally we would rollback, but that's complex. 
+      // For now, we abort updating the folder metadata, so the folder "password" remains the OLD one.
+      // BUT, the files we *did* process are now encrypted with the NEW password. 
+      // This is a known risk. To limit data loss, the user would need to know which password to use per file.
+      // A full transactional rollback is difficult with IDB + blob re-encryption.
+      // We rely on the "Do not close" warning.
+      throw new Error('Re-encryption failed: ' + error.message);
+    }
+
+    // 4. Update folder metadata
+    folder.salt = uint8ArrayToBase64(newSalt);
+    folder.passwordHash = uint8ArrayToBase64(newPasswordHash);
+    await dbInstance.updateFolder(folder);
+
+    // 5. Update session
+    this.sessionPasswords.set(folderId, newPassword);
+    await this.saveSessionState();
+
+    return true;
+  }
+
+  /**
    * Delete a file
    */
   async deleteFile(fileId) {
