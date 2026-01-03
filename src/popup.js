@@ -11,12 +11,38 @@ class PopupUI {
     this.renameType = null;
     this.pendingFolderId = null;
     this.changePasswordFolderId = null;
+    this.isLinux = false;
     this.init();
   }
 
   async init() {
     try {
       await app.init();
+
+      // Check platform for Linux compatibility
+      if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.getPlatformInfo) {
+        const platformInfo = await chrome.runtime.getPlatformInfo();
+        this.isLinux = platformInfo.os === 'linux';
+
+        // Auto-detach on Linux to ensure file upload works seamlessly
+        // We add '?mode=detached' to avoid infinite loops and to know we are in the safe window
+        if (this.isLinux) {
+          const urlParams = new URLSearchParams(window.location.search);
+          const isDetached = urlParams.get('mode') === 'detached';
+
+          if (!isDetached) {
+            chrome.windows.create({
+              url: 'popup.html?mode=detached',
+              type: 'popup',
+              width: 600,
+              height: 530
+            });
+            window.close();
+            return; // Stop initialization in the transient popup
+          }
+        }
+      }
+
       this.setupEventListeners();
       await this.loadFolders();
       await this.selectDefaultFolder();
@@ -726,6 +752,12 @@ class PopupUI {
     const div = document.createElement('div');
     div.textContent = text;
     return div.innerHTML;
+  }
+
+  isPopup() {
+    // Check if the current window is a popup view
+    const views = chrome.extension.getViews({ type: 'popup' });
+    return views.includes(window);
   }
 
   // Storage indicator methods
