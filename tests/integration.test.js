@@ -137,7 +137,11 @@ describe('DocSafe Integration Tests', () => {
       mockReq.result = result;
       // For read requests, we still need to trigger onsuccess
       setTimeout(() => {
-        if (mockReq.onsuccess) mockReq.onsuccess({ target: { result } });
+        if (mockReq.onsuccess) {
+          const res = typeof result === 'function' ? result() : result;
+          mockReq.result = res;
+          mockReq.onsuccess({ target: { result: res } });
+        }
       }, 0);
       return mockReq;
     };
@@ -165,18 +169,18 @@ describe('DocSafe Integration Tests', () => {
       setupWriteOperation(mockTransaction);
       return { onsuccess: null, onerror: null, result: data.id || data.key || 'updated-id' };
     });
-    mockStore.get.mockImplementation((id) => setupMockRequest({ ...mockRequest }, mockRequest.result));
+    mockStore.get.mockImplementation((id) => setupMockRequest({ ...mockRequest }, () => mockRequest.result));
     mockStore.delete.mockImplementation(() => {
       setupWriteOperation(mockTransaction);
       return { onsuccess: null, onerror: null, result: undefined };
     });
-    mockStore.getAll.mockImplementation(() => setupMockRequest({ ...mockRequest }, mockRequest.result || []));
+    mockStore.getAll.mockImplementation(() => setupMockRequest({ ...mockRequest }, () => mockRequest.result || []));
     mockStore.clear.mockImplementation(() => {
       setupWriteOperation(mockTransaction);
       return { onsuccess: null, onerror: null, result: undefined };
     });
     mockStore.index.mockImplementation(() => ({
-      getAll: jest.fn().mockImplementation(() => setupMockRequest({ ...mockRequest }, mockRequest.result || []))
+      getAll: jest.fn().mockImplementation(() => setupMockRequest({ ...mockRequest }, () => mockRequest.result || []))
     }));
   });
 

@@ -1,7 +1,7 @@
 {
-  "name": "local-file-vault",
+  "name": "file-safe",
   "version": "1.0.0",
-  "description": "Local File Vault - Password Protect & Encrypt Files Offline",
+  "description": "File Safe",
   "main": "background.js",
   "type": "module",
   "scripts": {
@@ -12,7 +12,7 @@
     "lint:fix": "eslint src/ tests/ --fix",
     "build": "echo 'Extension ready for loading in Chrome'",
     "dev": "echo 'Load extension from current directory in Chrome Developer Mode'",
-    "package": "zip -r local-file-vault.zip . -x '*.git*' 'node_modules/*' 'tests/*' 'package*.json' '*.md'"
+    "package": "zip -r file-safe.zip . -x '*.git*' 'node_modules/*' 'tests/*' 'package*.json' '*.md'"
   },
   "keywords": [
     "chrome-extension",

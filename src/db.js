@@ -1,5 +1,5 @@
 /**
- * IndexedDB helper functions for DocSafe
+ * IndexedDB helper functions for File Safe
  */
 
 const DB_NAME = 'DocSafeDB';

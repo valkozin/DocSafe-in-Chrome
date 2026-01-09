@@ -1,6 +1,6 @@
-# DocSafe - Secure Document Vault Chrome Extension
+# File Safe - Secure Document Vault Chrome Extension
 
-DocSafe is a powerful Chrome extension that provides secure, encrypted document storage directly in your browser. With support for password-protected folders, AES-GCM encryption, and intuitive file management, DocSafe ensures your sensitive documents remain private and accessible only to you.
+File Safe is a powerful Chrome extension that provides secure, encrypted document storage directly in your browser. With support for password-protected folders, AES-GCM encryption, and intuitive file management, File Safe ensures your sensitive documents remain private and accessible only to you.
 
 ## 🔐 Key Features
 
@@ -22,7 +22,7 @@ DocSafe is a powerful Chrome extension that provides secure, encrypted document 
 2. **Open Chrome** and navigate to `chrome://extensions/`
 3. **Enable Developer mode** by toggling the switch in the top right
 4. **Click "Load unpacked"** and select the extension folder
-5. The DocSafe extension will appear in your extensions toolbar
+5. The File Safe extension will appear in your extensions toolbar
 
 ### Production Installation
 
@@ -34,7 +34,7 @@ DocSafe is a powerful Chrome extension that provides secure, encrypted document 
 
 ### Getting Started
 
-1. **Click the DocSafe icon** in your Chrome toolbar to open the popup
+1. **Click the File Safe icon** in your Chrome toolbar to open the popup
 2. **Default folder**: A "General" folder is created automatically for unprotected files
 3. **Upload files**: Drag and drop files or click the upload area to browse
 
@@ -236,4 +236,4 @@ For issues, questions, or feature requests:
 
 ---
 
-**🔒 Keep your documents safe with DocSafe!**
+**🔒 Keep your documents safe with File Safe!**

@@ -1,5 +1,5 @@
 /**
- * Main application logic for Local File Vault
+ * Main application logic for File Safe
  */
 
 import dbInstance from './db.js';
@@ -438,21 +438,21 @@ class LocalFileVaultApp {
     try {
       for (const file of files) {
         onProgress(`Processing file ${processedFiles + 1} of ${totalFiles}: ${file.filename}`);
-        
+
         const chunks = await dbInstance.getFileChunks(file.id);
-        
+
         for (const chunk of chunks) {
           // Decrypt with old password
           const decryptedChunk = await decryptFile(chunk.data, oldPassword, oldSalt, 'application/octet-stream');
-          
+
           // Encrypt with new password
           const reEncryptedChunk = await encryptFile(decryptedChunk, newPassword, newSalt);
-          
+
           // Update chunk
           chunk.data = reEncryptedChunk;
           await dbInstance.addFileChunk(chunk); // Overwrite existing chunk
         }
-        
+
         processedFiles++;
       }
     } catch (error) {

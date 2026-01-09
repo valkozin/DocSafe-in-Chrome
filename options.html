@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Local File Vault - Settings</title>
+  <title>File Safe - Settings</title>
   <link rel="stylesheet" href="css/options.css">
   <link rel="stylesheet" href="css/icons.css">
 </head>
@@ -15,7 +15,7 @@
     <header class="header">
       <div class="header-title">
         <span class="icon icon-security"></span>
-        Local File Vault Settings
+        File Safe Settings
       </div>
     </header>
 
@@ -54,81 +54,81 @@
       </section>
 
 
-  <!-- Security Settings -->
-  <section class="section">
-    <h2 class="section-title">
-      <span class="icon icon-security"></span>
-      Security Settings
-    </h2>
-    <div class="card">
-      <div class="setting-item">
-        <div class="setting-info">
-          <h3>Auto-lock when extension is closed</h3>
-          <p>Automatically lock all protected folders when you close the extension popup or dashboard</p>
-        </div>
-        <label class="toggle">
-          <input type="checkbox" id="autoLockToggle" checked>
-          <span class="toggle-slider"></span>
-        </label>
-      </div>
-    </div>
-  </section>
-
-  <!-- Danger Zone -->
-  <section class="section">
-    <h2 class="section-title danger">
-      <span class="icon icon-warning"></span>
-      Danger Zone
-    </h2>
-    <div class="card danger-card">
-      <div class="action-item">
-        <div class="action-info">
-          <h3>Reset Vault</h3>
-          <p><strong>Warning:</strong> This will permanently delete all files, folders, and settings. This action
-            cannot be undone.</p>
-        </div>
-        <button id="resetVaultBtn" class="btn btn-danger">
-          <span class="icon icon-delete"></span>
-          Reset Vault
-        </button>
-      </div>
-    </div>
-  </section>
-
-  <!-- About -->
-  <section class="section">
-    <h2 class="section-title">
-      <span class="icon icon-info"></span>
-      About
-    </h2>
-    <div class="card">
-      <div class="about-content">
-        <h3>Local File Vault</h3>
-        <p>Version 1.0.0</p>
-        <p>A secure document storage extension with encryption and password protection.</p>
-
-        <div class="features-list">
-          <div class="feature-item">
-            <span class="icon icon-encryption"></span>
-            <span>AES-GCM encryption for protected folders</span>
-          </div>
-          <div class="feature-item">
-            <span class="icon icon-layers"></span>
-            <span>Unlimited folder organization</span>
-          </div>
-          <div class="feature-item">
-            <span class="icon icon-cloud-off"></span>
-            <span>100% local storage - no cloud dependency</span>
-          </div>
-          <div class="feature-item">
-            <span class="icon icon-file"></span>
-            <span>Support for all file types</span>
+      <!-- Security Settings -->
+      <section class="section">
+        <h2 class="section-title">
+          <span class="icon icon-security"></span>
+          Security Settings
+        </h2>
+        <div class="card">
+          <div class="setting-item">
+            <div class="setting-info">
+              <h3>Auto-lock when extension is closed</h3>
+              <p>Automatically lock all protected folders when you close the extension popup or dashboard</p>
+            </div>
+            <label class="toggle">
+              <input type="checkbox" id="autoLockToggle" checked>
+              <span class="toggle-slider"></span>
+            </label>
           </div>
         </div>
-      </div>
-    </div>
-  </section>
-  </main>
+      </section>
+
+      <!-- Danger Zone -->
+      <section class="section">
+        <h2 class="section-title danger">
+          <span class="icon icon-warning"></span>
+          Danger Zone
+        </h2>
+        <div class="card danger-card">
+          <div class="action-item">
+            <div class="action-info">
+              <h3>Reset Vault</h3>
+              <p><strong>Warning:</strong> This will permanently delete all files, folders, and settings. This action
+                cannot be undone.</p>
+            </div>
+            <button id="resetVaultBtn" class="btn btn-danger">
+              <span class="icon icon-delete"></span>
+              Reset Vault
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- About -->
+      <section class="section">
+        <h2 class="section-title">
+          <span class="icon icon-info"></span>
+          About
+        </h2>
+        <div class="card">
+          <div class="about-content">
+            <h3>File Safe</h3>
+            <p>Version 1.0.0</p>
+            <p>A secure document storage extension with encryption and password protection.</p>
+
+            <div class="features-list">
+              <div class="feature-item">
+                <span class="icon icon-encryption"></span>
+                <span>AES-GCM encryption for protected folders</span>
+              </div>
+              <div class="feature-item">
+                <span class="icon icon-layers"></span>
+                <span>Unlimited folder organization</span>
+              </div>
+              <div class="feature-item">
+                <span class="icon icon-cloud-off"></span>
+                <span>100% local storage - no cloud dependency</span>
+              </div>
+              <div class="feature-item">
+                <span class="icon icon-file"></span>
+                <span>Support for all file types</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
   </div>
 
   <!-- Confirmation Modal -->

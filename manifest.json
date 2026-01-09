@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "Local File Vault - Password Protect & Encrypt Files Offline",
-  "short_name": "Local File Vault",
-  "version": "1.0.3",
+  "name": "File Safe",
+  "short_name": "File Safe",
+  "version": "1.0.5",
   "description": "Secure document storage with encryption and folder management",
   "permissions": [
     "storage",
@@ -10,7 +10,7 @@
   ],
   "action": {
     "default_popup": "popup.html",
-    "default_title": "Local File Vault"
+    "default_title": "File Safe"
   },
   "options_page": "options.html",
   "background": {
